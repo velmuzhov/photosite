@@ -25,6 +25,10 @@ main_app.include_router(
     prefix=settings.api.prefix,
 )
 
+@main_app.get("/")
+async def work_check():
+    return {"message": "API is running... still What if I change it?"}
+
 
 if __name__ == "__main__":
     uvicorn.run(

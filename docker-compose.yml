@@ -1,14 +1,31 @@
 services:
+  api:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    profiles:
+      - general
+      - dev
+      - test
+    volumes:
+      - ./backend/photosite-application:/app
+    ports:
+      - "9000:8000"
+    depends_on:
+      - pg
+    
   pg:
     image: postgres:17-alpine
     profiles:
       - general
+      - database
       - dev
       - test
     environment:
       - POSTGRES_DB=photosite
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
+    # Убрать перед сборкой
     ports:
       - '5500:5432'
     volumes:
