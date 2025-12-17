@@ -1,0 +1,28 @@
+services:
+  pg:
+    image: postgres:17-alpine
+    profiles:
+      - general
+      - dev
+      - test
+    environment:
+      - POSTGRES_DB=photosite
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - '5500:5432'
+    volumes:
+      - photosite_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    profiles:
+      - dev
+      - test
+    ports:
+      - '8080:8080'
+    depends_on:
+      - pg
+
+volumes:
+  photosite_data:
