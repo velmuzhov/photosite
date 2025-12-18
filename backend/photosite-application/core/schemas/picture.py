@@ -13,6 +13,8 @@ class PictureCreate(BasePicture):
 class PictureRead(BasePicture):
     id: int
     uploaded: datetime
+    event_id: int
+    path: str
 
     model_config = ConfigDict(
         from_attributes=True,

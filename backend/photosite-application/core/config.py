@@ -1,3 +1,4 @@
+from pathlib import Path
 from pydantic import BaseModel
 from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -10,11 +11,14 @@ class RunConfig(BaseModel):
 
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
-    users: str = "/users"
+    pictures: str = "/pictures"
 
 class ApiPrefix(BaseModel):
     prefix: str = "/api"
     v1: ApiV1Prefix = ApiV1Prefix()
+
+class Static(BaseModel):
+    image_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images"
 
 
 class DatabaseConfig(BaseModel):
@@ -47,6 +51,7 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
     db: DatabaseConfig = DatabaseConfig()
+    static: Static = Static()
 
 
 settings = Settings()

@@ -22,9 +22,9 @@ services:
       - dev
       - test
     environment:
-      - POSTGRES_DB=photosite
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     # Убрать перед сборкой
     ports:
       - '5500:5432'
@@ -34,6 +34,7 @@ services:
   adminer:
     image: adminer
     profiles:
+      - database
       - dev
       - test
     ports:
