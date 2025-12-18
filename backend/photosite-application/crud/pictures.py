@@ -9,6 +9,7 @@ from fastapi import File, Form, UploadFile, HTTPException, status
 
 from core.config import settings
 from utils.pictures import check_file_names, create_event, save_file_to_db
+from utils.general import check_date
 
 async def get_all_pictures(session: AsyncSession) -> Sequence[Picture]:
     result = await session.scalars(select(Picture).order_by(Picture.id))
@@ -21,14 +22,8 @@ async def upload_pictures(
     date: Annotated[str, Form()],
 ) -> list[str]:
     """Функция для загрузки нескольких изображений"""
-    try:
-        print(date)
-        date_obj = datetime.strptime(date, "%Y-%m-%d")
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Дата должна быть в формате YYYY-MM-DD",
-        )
+    
+    date_obj: datetime = check_date(date)
     
     if not check_file_names(files):
         raise HTTPException(

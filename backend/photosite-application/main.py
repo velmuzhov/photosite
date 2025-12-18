@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from core.config import settings
 from core.models import db_helper
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from api import router as api_router
 
@@ -20,10 +22,24 @@ main_app = FastAPI(
     lifespan=lifespan,
 )
 
+main_app.mount(
+    "/static",
+    StaticFiles(directory="static"),
+    name="static",
+)
+
+main_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_credentials=True,
+)
+
 main_app.include_router(
     router=api_router,
     prefix=settings.api.prefix,
 )
+
 
 @main_app.get("/")
 async def work_check():
