@@ -28,6 +28,8 @@ main_app.mount(
     name="static",
 )
 
+
+# исправить при деплое
 main_app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

@@ -9,7 +9,7 @@ from crud import pictures as pictures_crud
 router = APIRouter(
     prefix=settings.api.v1.pictures,
     tags=[
-        "users",
+        "pictures",
     ],
 )
 

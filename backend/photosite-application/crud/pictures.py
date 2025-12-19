@@ -52,13 +52,23 @@ async def upload_pictures(
             while chunk := await file.read(8192):
                 await buffer.write(chunk)
 
-        added_file = await save_file_to_db(
+        await save_file_to_db(
             db=db,
             name=file.filename,
             event=new_event,
             file_rel_path=f"{category}/{date.replace('-', '')}/{file.filename}",
         )
 
-        added_files.append(added_file.name)
+        added_files.append(file.filename)
+    
+    # Один коммит для всех добавленных фотографий
+    try:
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ошибка при добавлении фотографий: {e}",
+        )
 
     return added_files
