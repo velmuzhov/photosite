@@ -29,5 +29,14 @@ async def upload_pictures_operation(
     files: Annotated[list[UploadFile], File()],
     category: Annotated[str, Form()],
     date: Annotated[str, Form()],
+    event_cover: Annotated[UploadFile | None, Form()],
+    event_description: Annotated[str, Form()],
 ):
-    return await pictures_crud.upload_pictures(db, files, category, date)
+    return await pictures_crud.upload_pictures(
+        db,
+        files,
+        category,
+        date,
+        event_cover,
+        event_description,
+    )

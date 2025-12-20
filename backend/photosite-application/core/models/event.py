@@ -15,6 +15,9 @@ class Event(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey(
         column="category.id",
     ))
+    cover: Mapped[str | None]
+    description: Mapped[str | None]
+
 
     __table_args__ = (
         UniqueConstraint("date", "category_id"),

@@ -8,7 +8,7 @@ from core.models.event import Event
 from core.models.picture import Picture
 from core.config import settings
 from core.schemas.picture import PictureRead
-from core.schemas.event import EventRead
+from core.schemas.event import EventRead, EventReadNoPictures
 from crud import events as events_crud
 
 router = APIRouter(
@@ -31,7 +31,24 @@ async def get_one_event_pictures(
     Функция операции для получения всех фотографий из одной съемки.
     """
     return await events_crud.get_event_with_pictures(db, category, date)
+
+
+@router.get("/{category}", response_model=list[EventReadNoPictures])
+async def get_events_with_category(
+    db: get_async_db,
+    category: Annotated[str, Path()],
+):
+    """
+    Функция операции для получения всех съемок из данной категории
+    в обратном хронологическом порядке.
     
+    Изображения, относящиеся к съемке, не содержатся в ответе и не 
+    подгружаются при запросе из базы данных.
+    """
+    return await events_crud.get_events_by_category(
+        db,
+        category,
+    )
 
 
 @router.delete("/")

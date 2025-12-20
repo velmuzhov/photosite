@@ -4,7 +4,7 @@ from collections.abc import Sequence
 import shutil
 from pathlib import Path
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Form, HTTPException, status, Depends, Path
 
@@ -54,6 +54,8 @@ async def get_event_with_pictures(
         "id": event.id,
         "category_id": event.category_id,
         "date": event.date,
+        "cover": event.cover,
+        "description": event.description,
         "pictures": result.all(),
     }
 
@@ -64,8 +66,8 @@ async def delete_event(
     date: Annotated[str, Form()],
 ):
     """Удаляет съемку по ее категории и дате,
-    удаляя также связанные с ней изображения из static/images и
-    папку, в которой хранились эти изображения"""
+    удаляя также связанные с ней изображения из static/images, обложку и
+    папки, в которой хранились эти изображения"""
     event_to_delete = await check_event_exists(db, category, date)
 
     if event_to_delete is None:
@@ -87,6 +89,28 @@ async def delete_event(
     await db.commit()
 
     dir_to_remove = settings.static.image_dir / category / date.replace("-", "")
+    dir_with_cover_to_remove = (
+        settings.static.image_dir / "event_covers" / category / date.replace("-", "")
+    )
 
     if dir_to_remove.exists() and dir_to_remove.is_dir():
         shutil.rmtree(dir_to_remove)
+
+    if dir_with_cover_to_remove.exists() and dir_with_cover_to_remove.is_dir():
+        shutil.rmtree(dir_with_cover_to_remove)
+
+
+async def get_events_by_category(
+    db: AsyncSession,
+    category: str,
+) -> Sequence[Event]:
+    """Возвращает последовательность съемок,
+    относящихся к данной категории
+    от наиболее новых к самым старым."""
+    result = await db.scalars(
+        select(Event)
+        .join(Category)
+        .filter(Category.name == category)
+        .order_by(Event.date.desc())
+    )
+    return result.all()

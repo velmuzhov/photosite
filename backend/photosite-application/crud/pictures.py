@@ -8,7 +8,7 @@ from core.models.picture import Picture
 from fastapi import File, Form, UploadFile, HTTPException, status
 
 from core.config import settings
-from utils.pictures import check_file_names, create_event, save_file_to_db
+from utils.pictures import check_file_names, create_event, save_file_to_db, write_one_file_on_disc
 from utils.general import check_date
 
 async def get_all_pictures(session: AsyncSession) -> Sequence[Picture]:
@@ -20,6 +20,8 @@ async def upload_pictures(
     files: Annotated[list[UploadFile], File()],
     category: Annotated[str, Form()],
     date: Annotated[str, Form()],
+    event_cover: Annotated[UploadFile | None, Form()],
+    event_description: Annotated[str | None, Form()],
 ) -> list[str]:
     """Функция для загрузки нескольких изображений"""
     
@@ -36,7 +38,20 @@ async def upload_pictures(
     date_dir = category_dir / date.replace("-", "")
     date_dir.mkdir(parents=True, exist_ok=True)
 
-    new_event = await create_event(db, category, date_obj)
+
+    # Сохранение изображения с обложкой категории
+    if event_cover and event_cover.filename:
+        event_cover_path = event_cover.filename
+        event_cover_dir = settings.static.image_dir / "event_covers" / category / date.replace("-", "")
+        event_cover_dir.mkdir(parents=True, exist_ok=True)
+        file_path = event_cover_dir / event_cover.filename
+        await write_one_file_on_disc(file_path, event_cover)
+        event_cover_path = f"event_covers/{category}/{date.replace('-', '')}/{event_cover.filename}"
+
+    else:
+        event_cover_path = None
+
+    new_event = await create_event(db, category, date_obj, event_cover_path, event_description)
 
     added_files = []
 
@@ -48,9 +63,7 @@ async def upload_pictures(
             )
         file_path = date_dir / file.filename
 
-        async with aiofiles.open(file_path, "wb") as buffer:
-            while chunk := await file.read(8192):
-                await buffer.write(chunk)
+        await write_one_file_on_disc(file_path, file)
 
         await save_file_to_db(
             db=db,

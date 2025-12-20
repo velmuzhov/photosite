@@ -58,6 +58,8 @@ async def create_event(
     db: AsyncSession,
     category: str,
     date: datetime,
+    cover: str | None,
+    description: str | None,
 ) -> Event:
     """Создает и возвращает новую съемку в таблице event, id которой
     будет присваиваться полю event_id загружаемых фотографий.
@@ -68,6 +70,8 @@ async def create_event(
     new_event = Event(
         date=date,
         category_id=category_in_db.id,
+        cover = cover,
+        description = description,
     )
     db.add(new_event)
     await db.commit()
@@ -93,3 +97,8 @@ async def save_file_to_db(
         event_id=event.id,
     )
     db.add(new_picture)
+
+async def write_one_file_on_disc(filename: str | Path, file: UploadFile) -> None:
+    async with aiofiles.open(filename, "wb") as buffer:
+        while chunk := await file.read(8192):
+            await buffer.write(chunk)
