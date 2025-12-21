@@ -88,9 +88,9 @@ async def delete_event(
     await db.delete(event_to_delete)
     await db.commit()
 
-    dir_to_remove = settings.static.image_dir / category / date.replace("-", "")
+    dir_to_remove = settings.static.image_dir / category / date
     dir_with_cover_to_remove = (
-        settings.static.image_dir / "event_covers" / category / date.replace("-", "")
+        settings.static.image_dir / "event_covers" / category / date
     )
 
     if dir_to_remove.exists() and dir_to_remove.is_dir():

@@ -102,3 +102,4 @@ async def write_one_file_on_disc(filename: str | Path, file: UploadFile) -> None
     async with aiofiles.open(filename, "wb") as buffer:
         while chunk := await file.read(8192):
             await buffer.write(chunk)
+

@@ -40,3 +40,12 @@ async def upload_pictures_operation(
         event_cover,
         event_description,
     )
+
+
+@router.delete("/")
+async def delete_pictures_operation(
+    db: get_async_db,
+    pictures: list[str],
+) -> dict[str, str]:
+    await pictures_crud.delete_pictures(db, pictures)
+    return {"message": f"Изображения удалены"}

@@ -35,18 +35,18 @@ async def upload_pictures(
 
 
     category_dir = settings.static.image_dir / category
-    date_dir = category_dir / date.replace("-", "")
+    date_dir = category_dir / date
     date_dir.mkdir(parents=True, exist_ok=True)
 
 
     # Сохранение изображения с обложкой категории
     if event_cover and event_cover.filename:
         event_cover_path = event_cover.filename
-        event_cover_dir = settings.static.image_dir / "event_covers" / category / date.replace("-", "")
+        event_cover_dir = settings.static.image_dir / "event_covers" / category / date
         event_cover_dir.mkdir(parents=True, exist_ok=True)
         file_path = event_cover_dir / event_cover.filename
         await write_one_file_on_disc(file_path, event_cover)
-        event_cover_path = f"event_covers/{category}/{date.replace('-', '')}/{event_cover.filename}"
+        event_cover_path = f"event_covers/{category}/{date}/{event_cover.filename}"
 
     else:
         event_cover_path = None
@@ -69,7 +69,7 @@ async def upload_pictures(
             db=db,
             name=file.filename,
             event=new_event,
-            file_rel_path=f"{category}/{date.replace('-', '')}/{file.filename}",
+            file_rel_path=f"{category}/{date}/{file.filename}",
         )
 
         added_files.append(file.filename)
@@ -85,3 +85,29 @@ async def upload_pictures(
         )
 
     return added_files
+
+async def delete_pictures(
+        db: AsyncSession,
+        picture_paths: list[str],
+) -> None:
+    """Удаляет в рамках транзакции выбранные фотографии
+    из базы данных по их путям.
+    При успешном удалении из базы данных удаляются файлы
+    на диске."""
+    async with db.begin():
+        for picture_path in picture_paths:
+            picture = await db.scalar(
+                select(Picture)
+                .filter(Picture.path == picture_path)
+            )
+            if picture is None:
+                raise
+            await db.delete(picture)
+        await db.flush()
+        for picture_path in picture_paths:
+            file_path = settings.static.image_dir / picture_path
+            try:
+                file_path.unlink(missing_ok=True)
+            except Exception as e:
+                # залогировать
+                print(f"Ошибка при удалении {file_path}: {e}")
