@@ -17,7 +17,7 @@ pwd_context = CryptContext(
     deprecated="auto",
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.api.prefix}{settings.api.v1.prefix}/users/token")
 
 
 def hash_password(password: str) -> str:

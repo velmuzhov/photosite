@@ -28,18 +28,20 @@ router = APIRouter(
 )
 
 
+# не должно быть в продакшене
 @router.post("/", response_model=UserRead)
 async def create_user(
     db: get_async_db,
     user: UserCreate,
 ):
+    """Создает нового пользователя. Закомментировать после публикации"""
     return await users_crud.create_user_with_username_and_password(db, user)
 
 
 @router.post("/token")
 async def login(
     db: get_async_db,
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):
     """Конечная точка для авторизации. Создает access- и refresh-токены"""
     user = await users_crud.get_user_by_username(db, form_data.username)
@@ -63,5 +65,7 @@ async def login(
 # удалить после тестирования
 @router.get("/", response_model=list[UserRead])
 async def get_all_users(db: get_async_db):
+    """Выводит всех пользователей. Должна работать
+    только на этапе разработки"""
     result = await db.scalars(select(User))
     return result.all()
