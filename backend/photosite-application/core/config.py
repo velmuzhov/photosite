@@ -13,6 +13,7 @@ class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
     pictures: str = "/pictures"
     events: str = "/events"
+    users: str = "/users"
 
 class ApiPrefix(BaseModel):
     prefix: str = "/api"
@@ -21,6 +22,11 @@ class ApiPrefix(BaseModel):
 class Static(BaseModel):
     image_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images"
 
+class Auth(BaseModel):
+    access_token_expires_minutes: int = 30
+    refresh_token_expire_days: int = 30
+    secret_key: str = "my_secret_key"
+    algorithm: str = "HS256"
 
 class DatabaseConfig(BaseModel):
     url: PostgresDsn | None = None
@@ -53,6 +59,7 @@ class Settings(BaseSettings):
     api: ApiPrefix = ApiPrefix()
     db: DatabaseConfig = DatabaseConfig()
     static: Static = Static()
+    auth: Auth = Auth()
 
 
 settings = Settings()
