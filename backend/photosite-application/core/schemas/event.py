@@ -10,10 +10,8 @@ class BaseEvent(BaseModel):
     description: str | None
 
 
-class EventCreateOrUpdate(BaseEvent):
-    """Схема для создания съемки или обновления
-    информации о ней."""
-
+class EventUpdate(BaseEvent):
+    """Схема для обновления информации о съемке."""
     pass
 
 

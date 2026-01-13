@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
-from datetime import date
-from sqlalchemy import ForeignKey, UniqueConstraint
+from datetime import date, datetime, timezone
+from sqlalchemy import ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.models.base import Base
+from utils.general import get_now_utc
 
 if TYPE_CHECKING:
     from core.models.category import Category
@@ -17,6 +18,10 @@ class Event(Base):
     ))
     cover: Mapped[str | None]
     description: Mapped[str | None]
+    created: Mapped[datetime] = mapped_column(
+        default=get_now_utc,
+        server_default=func.now(),
+    )
 
 
     __table_args__ = (

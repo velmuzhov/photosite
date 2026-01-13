@@ -9,7 +9,7 @@ from core.models.picture import Picture
 from core.models.user import User
 from core.config import settings
 from core.schemas.picture import PictureRead
-from core.schemas.event import EventRead, EventReadNoPictures, EventCreateOrUpdate
+from core.schemas.event import EventRead, EventReadNoPictures, EventUpdate
 from crud import events as events_crud
 
 from utils.authorization import get_current_user
@@ -67,7 +67,7 @@ async def edit_event(
     """Конечная точка для изменения съемки. Можно изменить
     категорию, обложку, описание и дату съемки. Новые данные
     поступают из формы и должны валидироваться схемой
-    EventCreateOrUpdate    
+    EventUpdate    
     """
     ...
 
