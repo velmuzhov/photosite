@@ -8,12 +8,20 @@ from core.models.picture import Picture
 from fastapi import File, Form, UploadFile, HTTPException, status
 
 from core.config import settings
-from utils.pictures import check_file_names, create_event, save_file_to_db, write_one_file_on_disc
+from utils.pictures import (
+    check_file_names,
+    create_event,
+    save_file_to_db,
+    write_one_file_on_disc,
+    save_multiple_files_to_event,
+)
 from utils.general import check_date
+
 
 async def get_all_pictures(session: AsyncSession) -> Sequence[Picture]:
     result = await session.scalars(select(Picture).order_by(Picture.id))
     return result.all()
+
 
 async def upload_pictures(
     db: AsyncSession,
@@ -24,20 +32,18 @@ async def upload_pictures(
     event_description: Annotated[str | None, Form()],
 ) -> list[str]:
     """Функция для загрузки нескольких изображений"""
-    
+
     date_obj: datetime = check_date(date)
-    
+
     if not check_file_names(files):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Неверные имена или расширения файлов",
         )
 
-
     category_dir = settings.static.image_dir / category
     date_dir = category_dir / date
     date_dir.mkdir(parents=True, exist_ok=True)
-
 
     # Сохранение изображения с обложкой категории
     if event_cover and event_cover.filename:
@@ -51,44 +57,23 @@ async def upload_pictures(
     else:
         event_cover_path = None
 
-    new_event = await create_event(db, category, date_obj, event_cover_path, event_description)
+    new_event = await create_event(
+        db, category, date_obj, event_cover_path, event_description
+    )
 
-    added_files = []
+    return await save_multiple_files_to_event(
+        db=db,
+        event=new_event,
+        category=category,
+        date=date,
+        files_to_add=files,
+        dir_for_upload=date_dir,
+    )
 
-    for file in files:
-        if not file.filename:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Загружаемый файл должен иметь имя",
-            )
-        file_path = date_dir / file.filename
-
-        await write_one_file_on_disc(file_path, file)
-
-        await save_file_to_db(
-            db=db,
-            name=file.filename,
-            event=new_event,
-            file_rel_path=f"{category}/{date}/{file.filename}",
-        )
-
-        added_files.append(file.filename)
-    
-    # Один коммит для всех добавленных фотографий
-    try:
-        await db.commit()
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Ошибка при добавлении фотографий: {e}",
-        )
-
-    return added_files
 
 async def delete_pictures(
-        db: AsyncSession,
-        picture_paths: list[str],
+    db: AsyncSession,
+    picture_paths: list[str],
 ) -> None:
     """Удаляет в рамках транзакции выбранные фотографии
     из базы данных по их путям.
@@ -97,8 +82,7 @@ async def delete_pictures(
     async with db.begin():
         for picture_path in picture_paths:
             picture = await db.scalar(
-                select(Picture)
-                .filter(Picture.path == picture_path)
+                select(Picture).filter(Picture.path == picture_path)
             )
             if picture is None:
                 raise

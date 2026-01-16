@@ -103,3 +103,39 @@ async def write_one_file_on_disc(filename: str | Path, file: UploadFile) -> None
         while chunk := await file.read(8192):
             await buffer.write(chunk)
 
+async def save_multiple_files_to_event(
+        db: AsyncSession,
+        event: Event,
+        category: str,
+        date: str,
+        files_to_add: list[UploadFile],
+        dir_for_upload: Path,
+) -> list[str]:
+    added_files = []
+
+    for file in files_to_add:
+        if not file.filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Загружаемый файл должен иметь имя",
+            )
+        await write_one_file_on_disc(dir_for_upload / file.filename, file)
+        await save_file_to_db(
+            db,
+            file.filename,
+            event,
+            f"{category}/{date}/{file.filename}",
+        )
+        added_files.append(file.filename)
+
+    try:
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ошибка при добавлении фотографий: {e}",
+        )
+
+    return added_files
+

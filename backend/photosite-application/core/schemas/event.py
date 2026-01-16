@@ -30,4 +30,5 @@ class EventRead(BaseEvent):
     """
 
     id: int
+    created: datetime
     pictures: list[PictureRead]

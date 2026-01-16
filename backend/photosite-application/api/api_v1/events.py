@@ -1,7 +1,9 @@
 from typing import Annotated
 from collections.abc import Sequence
-from fastapi import APIRouter, Depends, Form, Path
+from fastapi import APIRouter, Depends, Form, Path, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi_cache.decorator import cache
+from fastapi_cache import FastAPICache
 
 from core.models import db_helper
 from core.models.event import Event
@@ -25,6 +27,7 @@ get_async_db = Annotated[AsyncSession, Depends(db_helper.session_getter)]
 
 
 @router.get("/{category}/{date}", response_model=EventRead)
+@cache(expire=60 * 60 * 3)
 async def get_one_event_pictures(
     db: get_async_db,
     category: Annotated[str, Path()],
@@ -37,6 +40,7 @@ async def get_one_event_pictures(
 
 
 @router.get("/{category}", response_model=list[EventReadNoPictures])
+@cache(expire=60 * 60 * 3)
 async def get_events_with_category(
     db: get_async_db,
     category: Annotated[str, Path()],
@@ -51,14 +55,15 @@ async def get_events_with_category(
 
     Кнопка "редактировать" - на страницу с формой, которая отправляется
     на PUT /{category}/{date}.
-    
-    Изображения, относящиеся к съемке, не содержатся в ответе и не 
+
+    Изображения, относящиеся к съемке, не содержатся в ответе и не
     подгружаются при запросе из базы данных.
     """
     return await events_crud.get_events_by_category(
         db,
         category,
     )
+
 
 @router.put("/{category}/{date}/description")
 async def edit_event(
@@ -67,11 +72,20 @@ async def edit_event(
     """Конечная точка для изменения съемки. Можно изменить
     категорию, обложку, описание и дату съемки. Новые данные
     поступают из формы и должны валидироваться схемой
-    EventUpdate    
+    EventUpdate
     """
-    ...
+    await FastAPICache.clear()
 
 
+@router.patch("/{category}/{date}")
+async def add_pictures(
+    user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+    category: Annotated[str, Path()],
+    date: Annotated[str, Path()],
+    files: Annotated[list[UploadFile], File()],
+):
+    return await events_crud.add_pictures_to_existing_event(db, category, date, files)
 
 
 @router.delete("/{category}/{date}")
@@ -87,3 +101,13 @@ async def delete_event_operation(
     "удалить" рядом со съемкой."""
     await events_crud.delete_event(db, category, date)
     return {"message": f"Съемка {date} из категории {category} удалена"}
+
+
+@router.get("/")
+async def get_all_events(
+    user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+    limit: Annotated[int | None, Query()] = None,
+):
+    """Возвращает limit последних созданных съемок"""
+    return await events_crud.get_events_by_date_created(db, limit)

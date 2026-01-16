@@ -28,6 +28,10 @@ class Auth(BaseModel):
     secret_key: str = "my_secret_key"
     algorithm: str = "HS256"
 
+class RedisConfig(BaseModel):
+    url: str = "redis://localhost:6379"
+    prefix: str = "fastapi-cache"
+
 class DatabaseConfig(BaseModel):
     url: PostgresDsn | None = None
     echo: bool = False
@@ -60,6 +64,7 @@ class Settings(BaseSettings):
     db: DatabaseConfig = DatabaseConfig()
     static: Static = Static()
     auth: Auth = Auth()
+    redis: RedisConfig = RedisConfig()
 
 
 settings = Settings()

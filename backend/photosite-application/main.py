@@ -6,12 +6,24 @@ from core.config import settings
 from core.models import db_helper
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from redis import asyncio as aioredis
 
 from api import router as api_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    redis = aioredis.from_url(
+        settings.redis.url,
+        encoding="utf-8",
+        decode_responses=True,
+    )
+    FastAPICache.init(
+        RedisBackend(redis),
+        prefix=settings.redis.prefix,
+    )
     yield
     print("Dispose engine")
     await db_helper.dispose()
