@@ -66,6 +66,8 @@ class Settings(BaseSettings):
     auth: Auth = Auth()
     redis: RedisConfig = RedisConfig()
 
+    environment: str = ""
+
 
 settings = Settings()
 
