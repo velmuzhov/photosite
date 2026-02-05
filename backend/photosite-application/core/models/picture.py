@@ -14,7 +14,7 @@ class Picture(Base):
     __tablename__ = "picture"
 
     name: Mapped[str]
-    path: Mapped[str]
+    path: Mapped[str] = mapped_column(unique=True)
     uploaded: Mapped[datetime] = mapped_column(
         default=datetime.now,
         server_default=func.now(),

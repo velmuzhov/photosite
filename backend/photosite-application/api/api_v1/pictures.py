@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
 from fastapi_cache.decorator import cache
 from fastapi_cache import FastAPICache
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,8 +22,11 @@ get_async_db = Annotated[AsyncSession, Depends(db_helper.session_getter)]
 
 
 @router.get("/", response_model=list[PictureRead])
-@cache(expire=60*60*3)
-async def get_all_pictures(db: get_async_db):
+@cache(expire=60 * 60 * 3)
+async def get_all_pictures_sorted_by_id(
+    user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+):
     """Получение всех фотографий, отсортированных по id"""
     return await pictures_crud.get_all_pictures(db)
 
@@ -35,8 +38,8 @@ async def upload_pictures_operation(
     files: Annotated[list[UploadFile], File()],
     category: Annotated[str, Form()],
     date: Annotated[str, Form()],
-    event_cover: Annotated[UploadFile | None, Form()],
     event_description: Annotated[str, Form()],
+    event_cover: Annotated[UploadFile | None, Form()] = None,
 ):
     # await FastAPICache.clear()
     return await pictures_crud.upload_pictures(
@@ -51,8 +54,15 @@ async def upload_pictures_operation(
 
 @router.delete("/")
 async def delete_pictures_operation(
+    user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
-    pictures: list[str],
+    pictures: Annotated[list[str], Form()],
 ) -> dict[str, str]:
-    await pictures_crud.delete_pictures(db, pictures)
-    return {"message": f"Изображения удалены"}
+    try:
+        await pictures_crud.delete_pictures(db, pictures)
+        return {"message": f"Изображения удалены"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )

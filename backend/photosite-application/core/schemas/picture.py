@@ -12,6 +12,7 @@ class PictureCreate(BasePicture):
 
 class PictureRead(BasePicture):
     id: int
+    name: str
     uploaded: datetime
     event_id: int
     path: str

@@ -28,8 +28,8 @@ async def upload_pictures(
     files: Annotated[list[UploadFile], File()],
     category: Annotated[str, Form()],
     date: Annotated[str, Form()],
-    event_cover: Annotated[UploadFile | None, Form()],
-    event_description: Annotated[str | None, Form()],
+    event_cover: Annotated[UploadFile | None, Form()] = None,
+    event_description: Annotated[str | None, Form()] = None,
 ) -> list[str]:
     """Функция для загрузки нескольких изображений"""
 
@@ -80,12 +80,14 @@ async def delete_pictures(
     При успешном удалении из базы данных удаляются файлы
     на диске."""
     async with db.begin():
-        for picture_path in picture_paths:
+        for picture_path in set(
+            picture_paths
+        ):  # удаление дубликатов, должно сработать одно удаление без вызова исключения
             picture = await db.scalar(
                 select(Picture).filter(Picture.path == picture_path)
             )
             if picture is None:
-                raise
+                raise ValueError(f"Такого не существует: {picture_path}")
             await db.delete(picture)
         await db.flush()
         for picture_path in picture_paths:
