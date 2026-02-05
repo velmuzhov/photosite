@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, func, DateTime
 from .base import Base
+from utils.general import now_utc
 
 if TYPE_CHECKING:
     from core.models.event import Event
@@ -16,8 +17,9 @@ class Picture(Base):
     name: Mapped[str]
     path: Mapped[str] = mapped_column(unique=True)
     uploaded: Mapped[datetime] = mapped_column(
-        default=datetime.now,
-        server_default=func.now(),
+        DateTime(timezone=True),
+        default=now_utc,
+        server_default=func.timezone("UTC", func.now()),
     )
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id", ondelete="CASCADE"))
 

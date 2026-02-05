@@ -14,3 +14,7 @@ def check_date(date: str) -> datetime:
             detail="Дата должна быть в формате YYYY-MM-DD",
         )
     return date_obj
+
+def now_utc() -> datetime:
+    """Возвращает текущую дату и время в UTC"""
+    return datetime.now(timezone.utc)
