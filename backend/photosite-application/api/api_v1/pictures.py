@@ -22,7 +22,7 @@ get_async_db = Annotated[AsyncSession, Depends(db_helper.session_getter)]
 
 
 @router.get("/", response_model=list[PictureRead])
-@cache(expire=60 * 60 * 3)
+# @cache(expire=60 * 60 * 3)
 async def get_all_pictures_sorted_by_id(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,

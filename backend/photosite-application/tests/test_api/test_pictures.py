@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 import io
-from datetime import date, datetime
-from typing import List
+from datetime import date
 
 import pytest
 from fastapi import UploadFile
@@ -10,48 +9,8 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from httpx import AsyncClient
 
-from crud import pictures as pictures_crud
 from core.models import Category, Event, Picture
-from core.schemas.picture import PictureCreate, PictureRead
-
-
-async def create_test_category(db: AsyncSession, name: str = "portrait") -> Category:
-    """Создает тестовую категорию"""
-    existing_category = await db.scalar(select(Category).where(Category.name == name))
-    if existing_category:
-        return existing_category
-
-    category = Category(name=name)
-    db.add(category)
-    await db.commit()
-    await db.refresh(category)
-    return category
-
-
-async def get_valid_upload_files(filenames: List[str]) -> List[UploadFile]:
-    """
-    Создаёт список UploadFile с именами, состоящими из цифр и расширением .jpg/.jpeg.
-    Поднимает ошибку, если имя не соответствует формату.
-    """
-    files = []
-    for name in filenames:
-        if not (name.endswith(".jpg") or name.endswith(".jpeg")):
-            raise ValueError(
-                f"Имя файла должно иметь расширение .jpg или .jpeg: {name}"
-            )
-        name_without_ext = name.rsplit(".", 1)[0]
-        if not name_without_ext.isdigit():
-            raise ValueError(
-                f"Имя файла (без расширения) должно состоять только из цифр: {name}"
-            )
-
-        content = b"fake image content"
-        file = UploadFile(
-            filename=name,
-            file=io.BytesIO(content),
-        )
-        files.append(file)
-    return files
+from .utils import create_test_category, get_valid_upload_files, add_pictures_for_event
 
 
 class TestUploadPictures:
@@ -401,34 +360,7 @@ class TestGetAllPictures:
 class TestDeletePictures:
     """Тесты для удаления фотографий"""
 
-    async def add_pictures_for_event(
-        self,
-        authenticated_client: AsyncClient,
-        db: AsyncSession,
-        pics: list[str] = ["123.jpg", "456.jpeg", "789.jpeg"],
-    ) -> tuple[str, str]:
-        """Создает в базе данных мероприятие с фотографиями из списка pics"""
-
-        category_name = "wedding"
-        upload_date = "2024-05-25"
-
-        category: Category = await create_test_category(db, category_name)
-
-        files = await get_valid_upload_files(pics)
-
-        form_data = {
-            "category": category.name,
-            "date": upload_date,
-            "event_description": "Тестовая свадьба",
-        }
-
-        await authenticated_client.post(
-            "/api/v1/pictures/",
-            data=form_data,
-            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files],
-        )
-
-        return category_name, upload_date
+    
 
     @pytest.mark.asyncio
     async def test_delete_pictures_success(
@@ -438,7 +370,7 @@ class TestDeletePictures:
     ):
         """Тестирование успешного удаления нескольких фотографий."""
 
-        category_name, upload_date = await self.add_pictures_for_event(
+        category_name, upload_date = await add_pictures_for_event(
             authenticated_client, db
         )
 
@@ -472,7 +404,7 @@ class TestDeletePictures:
     ):
         """Тест: попытка удалить несуществующие пути — ошибка в CRUD."""
 
-        await self.add_pictures_for_event(authenticated_client, db)
+        await add_pictures_for_event(authenticated_client, db)
 
         response = await authenticated_client.request(
             "DELETE",
@@ -490,7 +422,7 @@ class TestDeletePictures:
     ):
         """Тестирование удаления пустого списка файлов. Должен вернуться ответ 422"""
 
-        await self.add_pictures_for_event(authenticated_client, db)
+        await add_pictures_for_event(authenticated_client, db)
 
         response = await authenticated_client.request(
             "DELETE",
@@ -515,7 +447,7 @@ class TestDeletePictures:
     ):
         """Тестирование удаления при указании одного имени несколько раз.
         Должно происходить только одно удаление, исключений вызываться не должно."""
-        category_name, upload_date = await self.add_pictures_for_event(
+        category_name, upload_date = await add_pictures_for_event(
             authenticated_client,
             db,
         )
@@ -541,11 +473,10 @@ class TestDeletePictures:
         self,
         client: AsyncClient,  # неаутентифицированный клиент
         db: AsyncSession,
-        setup_test_static_dir,
     ):
         """Тест: доступ без авторизации — 401."""
 
-        await self.add_pictures_for_event(client, db)
+        await add_pictures_for_event(client, db)
 
         response = await client.request("DELETE", "/api/v1/pictures/", json=["123.jpg"])
         assert response.status_code == 401

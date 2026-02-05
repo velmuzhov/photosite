@@ -16,7 +16,7 @@ from utils.general import check_date
 from utils.pictures import check_file_names, write_one_file_on_disc, save_file_to_db, save_multiple_files_to_event
 
 
-async def check_event_exists(db: AsyncSession, category: str, date: str, with_pictures: bool = False) -> Event:
+async def check_event_exists(db: AsyncSession, category: str, date: str, with_pictures: bool = False,) -> Event:
     """Проверяет существование съемки по ее категории и дате"""
     date_obj = check_date(date)
 
