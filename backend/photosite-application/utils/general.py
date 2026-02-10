@@ -2,12 +2,12 @@ from datetime import datetime, timezone, date as dt_date
 from fastapi import HTTPException, status
 
 
-def check_date(date: str) -> datetime:
+def check_date(date: str) -> dt_date:
     """Проверяет допустимость ввода даты в форме
     и возвращает объект datetime, связанный с этой датой
     """
     try:
-        date_obj: dt_date = datetime.strptime(date, "%Y-%m-%d").date()
+        date_obj: dt_date = dt_date.fromisoformat(date)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Annotated
 import aiofiles
-from datetime import datetime
+from datetime import datetime, date as dt_date
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models.picture import Picture
@@ -33,7 +33,7 @@ async def upload_pictures(
 ) -> list[str]:
     """Функция для загрузки нескольких изображений"""
 
-    date_obj: datetime = check_date(date)
+    date_obj: dt_date = check_date(date)
 
     if not check_file_names(files):
         raise HTTPException(
@@ -42,6 +42,7 @@ async def upload_pictures(
         )
 
     category_dir = settings.static.image_dir / category
+    print(category_dir)
     date_dir = category_dir / date
     date_dir.mkdir(parents=True, exist_ok=True)
 

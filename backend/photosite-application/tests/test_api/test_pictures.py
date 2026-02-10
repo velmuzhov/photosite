@@ -55,17 +55,16 @@ class TestUploadPictures:
         assert "456.jpeg" in result
         assert "789.jpeg" in result
 
-        event = await db.execute(
+        event = await db.scalar(
             select(Event)
             .where(Event.date == date.fromisoformat(upload_date))
             .where(Event.category_id == category.id)
         )
-        event = event.scalars().first()
         assert event is not None
         assert event.description == "Тестовая свадьба"
 
-        pics = await db.execute(select(Picture).where(Picture.event_id == event.id))
-        pics = pics.scalars().all()
+        result = await db.scalars(select(Picture).where(Picture.event_id == event.id))
+        pics = result.all()
         assert len(pics) == 3
         assert {p.name for p in pics} == {"123.jpg", "456.jpeg", "789.jpeg"}
 
@@ -389,12 +388,12 @@ class TestDeletePictures:
         assert response.status_code == 200
         assert "Изображения удалены" in response.json()["message"]
 
-        response: Response = await authenticated_client.get(
+        after_response: Response = await authenticated_client.get(
             "api/v1/pictures/",
         )
 
-        assert len(response.json()) == 1
-        assert response.json()[0]["name"] == "789.jpeg"
+        assert len(after_response.json()) == 1
+        assert after_response.json()[0]["name"] == "789.jpeg"
 
     @pytest.mark.asyncio
     async def test_delete_nonexistent_pictures(

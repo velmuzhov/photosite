@@ -1,18 +1,18 @@
-from datetime import datetime
+from datetime import datetime, date as dt_date
 from pydantic import BaseModel
 from core.schemas.picture import PictureRead
 
 
 class BaseEvent(BaseModel):
     category_id: int
-    date: datetime
+    date: dt_date
     cover: str | None
     description: str | None
 
-
-class EventUpdate(BaseEvent):
-    """Схема для обновления информации о съемке."""
-    pass
+class EventUpdate(BaseModel):
+    date: str | None = None
+    description: str | None = None
+    category: str | None = None
 
 
 class EventReadNoPictures(BaseEvent):
@@ -32,3 +32,5 @@ class EventRead(BaseEvent):
     id: int
     created: datetime
     pictures: list[PictureRead]
+
+ 

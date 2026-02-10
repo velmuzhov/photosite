@@ -4,6 +4,10 @@ from pathlib import Path
 from typing import AsyncGenerator
 from unittest.mock import patch
 
+
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
@@ -21,7 +25,7 @@ from utils.authorization import get_current_user
 from main import main_app
 
 # Временная папка для картинок
-TEST_STATIC_DIR = Path("test_static")
+TEST_STATIC_DIR = Path(__file__).parent.parent.resolve() / "test_static" / "images"
 
 
 # Тестовая БД
@@ -115,7 +119,7 @@ async def authenticated_client(client: AsyncClient, test_user: User, db: AsyncSe
 @pytest.fixture(autouse=True)
 def setup_test_static_dir():
     """Создаёт и безопасно очищает тестовую статическую директорию."""
-    TEST_STATIC_DIR.mkdir(exist_ok=True)
+    TEST_STATIC_DIR.mkdir(parents=True, exist_ok=True)
 
     yield
 
@@ -126,10 +130,16 @@ def setup_test_static_dir():
             print(f"Ошибка: не удалось удалить {TEST_STATIC_DIR}: {e}")
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_settings():
     """Переопределяет settings для тестов (указываем test_static)."""
     original = settings.static.image_dir
     settings.static.image_dir = TEST_STATIC_DIR
     yield settings
     settings.static.image_dir = original
+
+@pytest_asyncio.fixture(autouse=True)
+async def init_test_cache():
+    FastAPICache.init(InMemoryBackend(), prefix="test-")
+    yield
+    FastAPICache.reset()  # очищает кеш после теста

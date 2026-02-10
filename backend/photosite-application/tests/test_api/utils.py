@@ -52,6 +52,7 @@ async def add_pictures_for_event(
         pics: list[str] = ["123.jpg", "456.jpeg", "789.jpeg"],
         category_name: str = "wedding",
         upload_date: str = "2024-05-25",
+        cover: str | None = None,
     ) -> tuple[str, str]:
         """Создает в базе данных мероприятие с фотографиями из списка pics"""
 
@@ -65,10 +66,15 @@ async def add_pictures_for_event(
             "event_description": "Тестовая свадьба",
         }
 
+
+        cover_file = None
+        if cover:
+            cover_file = await get_valid_upload_files([cover])
+
         await authenticated_client.post(
             "/api/v1/pictures/",
             data=form_data,
-            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files],
+            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files] + ([("event_cover", (cover_file[0].filename, cover_file[0].file, "image/jpeg"))] if cover_file is not None else []),
         )
 
         

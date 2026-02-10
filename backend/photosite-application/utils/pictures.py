@@ -1,5 +1,5 @@
 from typing import Annotated
-from datetime import datetime, date
+from datetime import date as dt_date
 from pathlib import Path
 import aiofiles
 from fastapi import Form, UploadFile, File, HTTPException, status
@@ -26,7 +26,7 @@ def check_file_names(files: list[UploadFile]) -> bool:
 async def check_event_and_category(
     db: AsyncSession,
     category: str,
-    date: datetime,
+    date: dt_date,
 ) -> Category:
     """Проверяет допустимость категории и даты съемки для загружаемых
     изображений. После успешных проверок возвращает объект ORM-модели
@@ -57,7 +57,7 @@ async def check_event_and_category(
 async def create_event(
     db: AsyncSession,
     category: str,
-    date: datetime,
+    date: dt_date,
     cover: str | None,
     description: str | None,
 ) -> Event:

@@ -48,16 +48,6 @@ async def get_events_with_category(
     """
     Функция операции для получения всех съемок из данной категории
     в обратном хронологическом порядке.
-
-    На фронтенде нужно реализовать кнопки "редактировать" и "удалить".
-
-    Кнопка "удалить" должна вести на маршрут DELETE /{category}/{date}.
-
-    Кнопка "редактировать" - на страницу с формой, которая отправляется
-    на PUT /{category}/{date}.
-
-    Изображения, относящиеся к съемке, не содержатся в ответе и не
-    подгружаются при запросе из базы данных.
     """
     return await events_crud.get_events_by_category(
         db,
@@ -65,16 +55,34 @@ async def get_events_with_category(
     )
 
 
-@router.put("/{category}/{date}/description")
+@router.put("/{category}/{date}", response_model=EventReadNoPictures)
 async def edit_event(
     user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+    category: Annotated[str, Path()],
+    date: Annotated[str, Path()],
+    new_date: Annotated[str | None, Form()] = None,
+    new_category: Annotated[str | None, Form()] = None,
+    new_description: Annotated[str | None, Form()] = None,
+    new_cover: Annotated[UploadFile | None, File()] = None,
 ):
     """Конечная точка для изменения съемки. Можно изменить
     категорию, обложку, описание и дату съемки. Новые данные
-    поступают из формы и должны валидироваться схемой
-    EventUpdate
+    поступают из формы.
     """
     await FastAPICache.clear()
+
+    return await events_crud.edit_event_data(
+        db=db,
+        category=category,
+        date=date,
+        new_data=EventUpdate(
+            date=new_date,
+            category=new_category,
+            description=new_description,
+        ),
+        new_cover=new_cover,
+    )
 
 
 @router.patch("/{category}/{date}")
@@ -84,7 +92,13 @@ async def add_pictures(
     category: Annotated[str, Path()],
     date: Annotated[str, Path()],
     files: Annotated[list[UploadFile], File()],
-):
+) -> list[str]:
+    """Конечная точка для добавления фотографий к существующей съемке.
+    Категория и дата съемки поступают не через форму, а как параметры пути. Файлы поступают через форму и должны быть валидированы
+    схемой EventUpdate. На этот маршрут должен отправляться запрос на фронтенде при нажатии кнопки.
+    """
+    await FastAPICache.clear()
+
     return await events_crud.add_pictures_to_existing_event(db, category, date, files)
 
 
@@ -97,8 +111,8 @@ async def delete_event_operation(
 ) -> dict[str, str]:
     """Конечная точка для удаления съемки. Категория и дата
     поступают не через форму, а как параметры пути. На этот маршрут
-    должен отправляться запрос на фронтенде при нажатии кнопки
-    "удалить" рядом со съемкой."""
+    должен отправляться запрос на фронтенде при нажатии кнопки."""
+    await FastAPICache.clear()
     await events_crud.delete_event(db, category, date)
     return {"message": f"Съемка {date} из категории {category} удалена"}
 
@@ -111,3 +125,25 @@ async def get_all_events(
 ):
     """Возвращает limit последних созданных съемок"""
     return await events_crud.get_events_by_date_created(db, limit)
+
+
+@router.delete("/{category}/{date}/description", response_model=EventReadNoPictures)
+async def delete_description_of_event(
+    user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+    category: Annotated[str, Path()],
+    date: Annotated[str, Path()],
+):
+    """Обработка маршрута для удаления описания съемки."""
+    return await events_crud.delete_event_description(db, category, date)
+
+
+@router.delete("/{category}/{date}/cover", response_model=EventReadNoPictures)
+async def delete_cover_of_event(
+    user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+    category: Annotated[str, Path()],
+    date: Annotated[str, Path()],
+):
+    """Обработка маршрута для удаления обложка съемки."""
+    return await events_crud.delete_event_cover(db, category, date)
