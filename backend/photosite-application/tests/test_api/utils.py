@@ -53,6 +53,7 @@ async def add_pictures_for_event(
         category_name: str = "wedding",
         upload_date: str = "2024-05-25",
         cover: str | None = None,
+        event_description: str | None = "Базовое описание для тестовой съемки",
     ) -> tuple[str, str]:
         """Создает в базе данных мероприятие с фотографиями из списка pics"""
 
@@ -63,7 +64,7 @@ async def add_pictures_for_event(
         form_data = {
             "category": category.name,
             "date": upload_date,
-            "event_description": "Тестовая свадьба",
+            "event_description": event_description,
         }
 
 

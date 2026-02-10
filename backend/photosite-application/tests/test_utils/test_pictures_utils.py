@@ -8,8 +8,10 @@ class TestCheckFileName:
     @pytest.mark.parametrize(
         "filename, expected",
         [
-            ("photo.jpg", False),
             ("123.jpeg", True),
+            ("2525667.jpg", True),
+            ("000.jpg", True),
+            ("photo.jpg", False),
             ("image.png", False),
             ("document.pdf", False),
             ("no_extension", False),
