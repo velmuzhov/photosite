@@ -218,3 +218,6 @@ __marimo__/
 images/
 *.jpeg
 *.jpg
+
+static/
+test_static/

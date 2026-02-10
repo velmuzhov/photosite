@@ -15,7 +15,10 @@ from core.config import settings
 def check_file_name(filename: str | None) -> bool:
     if filename is None:
         return False
-    name, ext = filename.split(".")
+    try:
+        name, ext = filename.split(".")
+    except ValueError:
+        return False
     return name.isdigit() and ext in ("jpg", "jpeg")
 
 
