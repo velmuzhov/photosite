@@ -1,18 +1,13 @@
-from collections.abc import Sequence
 import io
 from datetime import date
 
 import pytest
 from fastapi import UploadFile
-from httpx import Response
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from httpx import AsyncClient
 
-from core.models import Category, Event, Picture, User
-from crud.events import check_event_exists
-from utils.general import check_date
+from core.models import Category, Event, Picture
 from .utils import create_test_category, get_valid_upload_files, add_pictures_for_event
 
 

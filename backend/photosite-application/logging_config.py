@@ -25,11 +25,13 @@ def setup_logging(env="development"):
                 "stream": "ext://sys.stdout",
             },
             "file": {
-                "class": "logging.FileHandler",
+                "class": "logging.handlers.TimedRotatingFileHandler",
                 "formatter": "json",
                 "level": "INFO",
-                "filename": "app.log",
-                "mode": "a",
+                "filename": "logs/app.log",
+                "when": "midnight",
+                "backupCount": 14,
+                "encoding": "utf-8",
             },
         },
         "loggers": {
