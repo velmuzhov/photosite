@@ -48,7 +48,7 @@ class TestUploadPictures:
 
         print("Ответ сервера:", response.status_code, response.json())
 
-        assert response.status_code == 200
+        assert response.status_code == 201
         result = response.json()
         assert len(result) == 3
         assert "123.jpg" in result
@@ -223,7 +223,7 @@ class TestUploadPictures:
             files=files_data,
         )
 
-        assert response.status_code == 200
+        assert response.status_code == 201
 
         event = await db.scalar(
             select(Event)

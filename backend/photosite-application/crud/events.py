@@ -210,7 +210,7 @@ async def edit_event_data(
         )
         if existing_event:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_409_CONFLICT,
                 detail="Такая съемка уже существует",
             )
 
