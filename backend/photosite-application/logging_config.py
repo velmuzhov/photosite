@@ -1,6 +1,8 @@
 import os
 import logging.config
 
+from core.config import settings
+
 
 def setup_logging(env="development"):
     """Конфигурация логирования в зависимости от окружения."""
@@ -47,9 +49,9 @@ def setup_logging(env="development"):
         },
     }
 
-    if env == "production":
+    if settings.environment == "production":
         log_config["handlers"]["console"]["level"] = "WARNING"
-        log_config["handlers"]["file"]["formatter"] = "json"
+        log_config["handlers"]["file"]["level"] = "WARNING"
     else:
         log_config["handlers"]["console"]["level"] = "DEBUG"
 
@@ -68,7 +70,8 @@ def setup_logging(env="development"):
     # )
 
 
-env = os.getenv("ENVIRONMENT", "development")
-setup_logging(env)
+# env = os.getenv("ENVIRONMENT", "development")
+# print(env)
+# setup_logging(env)
 
 logger = logging.getLogger("app")

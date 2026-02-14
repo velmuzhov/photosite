@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import AsyncGenerator, Sequence
 import io
 from datetime import date
 
@@ -6,7 +6,7 @@ import pytest
 from fastapi import UploadFile
 from httpx import Response
 from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from httpx import AsyncClient
 
 from core.models import Category, Event, Picture
@@ -30,6 +30,8 @@ class TestUploadPictures:
         category = await create_test_category(db, category_name)
 
         files = await get_valid_upload_files(["123.jpg", "456.jpeg", "789.jpeg"])
+        cover = (await get_valid_upload_files(["300.jpg"]))[0]
+        print(cover)
 
         form_data = {
             "category": category_name,
@@ -38,12 +40,13 @@ class TestUploadPictures:
         }
 
         print("Запрос:", form_data)
-        print("Файлы:", [f.filename for f in files])
+        print("Файлы:", [f for f in files])
 
         response: Response = await authenticated_client.post(
             "/api/v1/pictures/",
             data=form_data,
-            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files],
+            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files]
+            + [("event_cover", (cover.filename, cover.file, "image/jpeg"))],
         )
 
         print("Ответ сервера:", response.status_code, response.json())
@@ -72,6 +75,9 @@ class TestUploadPictures:
         assert (date_dir / "123.jpg").exists()
         assert (date_dir / "456.jpeg").exists()
         assert (date_dir / "789.jpeg").exists()
+
+        cover_file = mock_settings.static.image_dir / event.cover
+        assert cover_file.exists()
 
     @pytest.mark.asyncio
     async def test_upload_pictures_no_authorization(
@@ -112,6 +118,11 @@ class TestUploadPictures:
             file=io.BytesIO(b"content"),
         )
 
+        cover = UploadFile(
+            filename="500.jpg",
+            file=io.BytesIO(b"cover content"),
+        )
+
         form_data = {
             "category": "wedding",
             "date": "2024-05-20",
@@ -121,7 +132,7 @@ class TestUploadPictures:
         response: Response = await authenticated_client.post(
             "/api/v1/pictures/",
             data=form_data,
-            files=[("files", ("abc.jpg", file.file, "image/jpeg"))],
+            files=[("files", ("abc.jpg", file.file, "image/jpeg"))] + [("event_cover", ("500.jpg", cover.file, "image/jpeg"))],
         )
 
         assert response.status_code == 400
@@ -152,6 +163,7 @@ class TestUploadPictures:
     ):
         """Тестирование загрузки с неправильной категорией"""
         files = await get_valid_upload_files(["789.jpg"])
+        cover = (await get_valid_upload_files(["500.jpg"]))[0]
         form_data = {
             "category": "invalid_category",
             "date": "2024-05-20",
@@ -161,7 +173,8 @@ class TestUploadPictures:
         response: Response = await authenticated_client.post(
             "/api/v1/pictures/",
             data=form_data,
-            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files],
+            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files]
+            + [("event_cover", (cover.filename, cover.file, "image/jpeg"))],
         )
 
         assert response.status_code == 400
@@ -171,6 +184,7 @@ class TestUploadPictures:
     async def test_invalid_date_format(self, authenticated_client: AsyncClient):
         """Тестирование загрузки с неверным форматом даты"""
         files = await get_valid_upload_files(["111.jpg"])
+        cover = (await get_valid_upload_files(["500.jpg"]))[0]
         form_data = {
             "category": "wedding",
             "date": "incorrect_date",
@@ -180,7 +194,7 @@ class TestUploadPictures:
         response: Response = await authenticated_client.post(
             "/api/v1/pictures/",
             data=form_data,
-            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files],
+            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files] + [("event_cover", (cover.filename, cover.file, "image/jpeg"))],
         )
 
         assert response.status_code == 400
@@ -276,7 +290,10 @@ class TestGetAllPictures:
         """Тест: успешный возврат списка фотографий (не пустой)."""
         category = await create_test_category(db, "portrait")
         event = Event(
-            date=date(2024, 1, 1), description="test event", category=category
+            date=date(2024, 1, 1),
+            description="test event",
+            category=category,
+            cover="event_covers/portrait/2024-01-01/500.jpg",
         )
         picture_1 = Picture(
             name="1.jpg",
@@ -331,10 +348,13 @@ class TestGetAllPictures:
         authenticated_client: AsyncClient,
         db: AsyncSession,
     ):
-        """Тестирование возврата всех фотографий, осортированных по возрастанию id."""
+        """Тестирование возврата всех фотографий, отсортированных по возрастанию id."""
         category = await create_test_category(db, "wedding")
         event = Event(
-            date=date(2024, 2, 2), description="sort event", category=category
+            date=date(2024, 2, 2),
+            description="sort event",
+            category=category,
+            cover="event_covers/wedding/2024-02-02/cover.jpg",
         )
 
         picture_3 = Picture(name="3.jpg", path="/3.jpg", event=event)
@@ -359,8 +379,6 @@ class TestGetAllPictures:
 class TestDeletePictures:
     """Тесты для удаления фотографий"""
 
-    
-
     @pytest.mark.asyncio
     async def test_delete_pictures_success(
         self,
@@ -368,13 +386,22 @@ class TestDeletePictures:
         db: AsyncSession,
     ):
         """Тестирование успешного удаления нескольких фотографий."""
-
+        
         category_name, upload_date = await add_pictures_for_event(
-            authenticated_client, db
+            authenticated_client, db, cover="700.jpg"
         )
 
         file1_path = f"{category_name}/{upload_date}/123.jpg"
         file2_path = f"{category_name}/{upload_date}/456.jpeg"
+
+
+        pics = await db.scalars(select(Picture))
+
+
+        pics = pics.all()
+        print([pic.name for pic in pics] if pics else "No pictures in DB")
+
+        await db.commit()
 
         response = await authenticated_client.request(
             method="DELETE",
@@ -403,7 +430,9 @@ class TestDeletePictures:
     ):
         """Тест: попытка удалить несуществующие пути — ошибка в CRUD."""
 
-        await add_pictures_for_event(authenticated_client, db)
+        await add_pictures_for_event(authenticated_client, db, cover="700.jpg")
+
+        await db.commit()
 
         response = await authenticated_client.request(
             "DELETE",
@@ -421,7 +450,7 @@ class TestDeletePictures:
     ):
         """Тестирование удаления пустого списка файлов. Должен вернуться ответ 422"""
 
-        await add_pictures_for_event(authenticated_client, db)
+        await add_pictures_for_event(authenticated_client, db, cover="700.jpg")
 
         response = await authenticated_client.request(
             "DELETE",
@@ -449,6 +478,7 @@ class TestDeletePictures:
         category_name, upload_date = await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="700.jpg",
         )
 
         files_to_delete = [
@@ -475,7 +505,7 @@ class TestDeletePictures:
     ):
         """Тест: доступ без авторизации — 401."""
 
-        await add_pictures_for_event(client, db)
+        await add_pictures_for_event(client, db, cover="700.jpg")
 
         response = await client.request("DELETE", "/api/v1/pictures/", json=["123.jpg"])
         assert response.status_code == 401

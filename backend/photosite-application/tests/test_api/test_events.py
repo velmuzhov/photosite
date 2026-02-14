@@ -166,7 +166,7 @@ class TestAddPicturesToExistingEvent:
         )
 
         response = await authenticated_client.patch(
-            f"/api/v1/events/portrait/2024-05-29",
+            f"/api/v1/events/portrait/2024-05-29/pictures",
             files=[("files", (f.filename, f.file, "image/jpeg")) for f in files_to_add],
         )
 
@@ -203,7 +203,7 @@ class TestAddPicturesToExistingEvent:
         )
 
         response = await authenticated_client.patch(
-            f"/api/v1/events/portrait/invalid-date",
+            f"/api/v1/events/portrait/invalid-date/pictures",
             files=[("files", (f.filename, f.file, "image/jpeg")) for f in files_to_add],
         )
 
@@ -231,7 +231,7 @@ class TestAddPicturesToExistingEvent:
         )
 
         response = await authenticated_client.patch(
-            f"/api/v1/events/portrait/2024-05-30",
+            f"/api/v1/events/portrait/2024-05-30/pictures",
             files=[("files", (f.filename, f.file, "image/jpeg")) for f in files_to_add],
         )
 
@@ -389,7 +389,7 @@ class TestEditEventData:
         )
 
         response = await authenticated_client.request(
-            "PUT",
+            "PATCH",
             "/api/v1/events/wedding/2024-05-28",
             data={
                 "new_category": "portrait",
@@ -437,7 +437,7 @@ class TestEditEventData:
         )
 
         response = await authenticated_client.request(
-            "PUT",
+            "PATCH",
             "/api/v1/events/wedding/2024-05-28",
             data={
                 "new_category": "portrait",

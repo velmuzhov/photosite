@@ -1,3 +1,4 @@
+import pathlib
 from datetime import datetime
 from typing import Annotated, Any
 from collections.abc import Sequence
@@ -12,7 +13,7 @@ from core.models.event import Event
 from core.models.category import Category
 from core.models.picture import Picture
 from core.schemas.event import EventRead, EventUpdate
-from utils.general import check_date
+from utils.general import check_date, move_files
 from utils.pictures import (
     check_file_names,
     write_one_file_on_disc,
@@ -184,41 +185,30 @@ async def edit_event_data(
     category: str,
     date: str,
     new_data: EventUpdate,
-    new_cover: UploadFile | None = None,
 ) -> Event:
     # Проверка на передачу пустых данных
-    if not any([new_data.date, new_data.description, new_data.category, new_cover]):
+    if not any([new_data.date, new_data.description, new_data.category]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Нет данных для обновления",
         )
-    event: Event = await check_event_exists(db, category, date)
+    event: Event = await check_event_exists(db, category, date, with_pictures=True)
 
-    # Проверка, что съемка с новой категорией и датой не существует
-    if (
-        new_data.date
-        or new_data.category
-        and (new_data.date != date or new_data.category != category)
-    ):
-        existing_event = await db.scalar(
-            select(Event)
-            .join(Category)
-            .filter(
-                Category.name == (new_data.category or category),
-                Event.date == check_date(new_data.date or date),
-            )
-        )
-        if existing_event:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Такая съемка уже существует",
-            )
+    cat_to_db: str = new_data.category or category
+    date_to_db: str = new_data.date or date
+    descr_to_db: str | None = new_data.description or event.description
 
-    # Обновление данных
-    if new_data.date:
-        event.date = check_date(new_data.date)
-    if new_data.description:
-        event.description = new_data.description
+    old_path: pathlib.Path | None = None
+    new_path: pathlib.Path | None = None
+    new_cover_path: pathlib.Path | None = None
+    old_cover_path: pathlib.Path | None = (
+        settings.static.image_dir / "event_covers" / event.cover
+        if event.cover
+        else None
+    )
+
+
+    # Проверка корректности новой категории
     if new_data.category:
         category_obj = await db.scalar(
             select(Category).filter(Category.name == new_data.category)
@@ -229,33 +219,53 @@ async def edit_event_data(
                 detail="Такой категории не существует",
             )
         event.category_id = category_obj.id
-    if new_cover:
-        if not new_cover.filename or not check_file_name(new_cover.filename):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Неверное имя или расширение файла обложки",
+
+    # Проверка, что съемки с новой категорией и датой не существует
+    if date_to_db != date or cat_to_db != category:
+        existing_event = await db.scalar(
+            select(Event)
+            .join(Category)
+            .filter(
+                Category.name == (cat_to_db),
+                Event.date == check_date(date_to_db),
             )
-        dir_for_cover = (
-            settings.static.image_dir
-            / "event_covers"
-            / (new_data.category or category)
-            / (new_data.date or date)
         )
-        dir_for_cover.mkdir(parents=True, exist_ok=True)
+        if existing_event:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Такая съемка уже существует",
+            )
 
-        # Удаление файла старой обложки из статики, если у съемки уже есть обложка
-        if event.cover:
-            old_dir = settings.static.image_dir / "event_covers" / category / date
-            # if old_dir.exists():
-            for item in old_dir.iterdir():
-                item.unlink()
+        # Обновление пути к папке с фотографиями съемки
+        if event.pictures:
+            old_path = settings.static.image_dir / category / date
+        new_path = settings.static.image_dir / cat_to_db / date_to_db
 
-        event.cover = f"event_covers/{new_data.category or category}/{new_data.date or date}/{new_cover.filename}"
-        event_cover_path = dir_for_cover / new_cover.filename
-        await write_one_file_on_disc(event_cover_path, new_cover)
+        for picture in event.pictures:
+            picture.path = f"{cat_to_db}/{date_to_db}/{picture.name}"
+
+    # Обновление данных
+    if new_data.date:
+        event.date = check_date(date_to_db)
+    if new_data.description:
+        event.description = descr_to_db
+
+    if event.cover:
+        old_cover_path: pathlib.Path | None = settings.static.image_dir / "event_covers" / event.cover
+        new_cover_path: pathlib.Path | None = settings.static.image_dir / "event_covers" / cat_to_db / date_to_db
+       
+        if old_cover_path != new_cover_path:
+            move_files(old_cover_path, new_cover_path)
 
     await db.commit()
     await db.refresh(event)
+
+
+
+    # Перемещение фотографий в новую папку с новым именем
+    # Проверить, не упадет ли после refresh со старой папкой
+    if old_path and new_path and old_path != new_path:
+        move_files(old_path, new_path)
 
     return event
 

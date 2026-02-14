@@ -4,8 +4,10 @@ from fastapi import UploadFile
 from httpx import AsyncClient
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from utils.general import check_date
 
-from core.models import Category
+from core.models import Category, Event, Picture
 
 
 async def create_test_category(db: AsyncSession, name: str = "portrait") -> Category:
@@ -49,10 +51,10 @@ async def get_valid_upload_files(filenames: list[str]) -> list[UploadFile]:
 async def add_pictures_for_event(
         authenticated_client: AsyncClient,
         db: AsyncSession,
+        cover: str,
         pics: list[str] = ["123.jpg", "456.jpeg", "789.jpeg"],
         category_name: str = "wedding",
         upload_date: str = "2024-05-25",
-        cover: str | None = None,
         event_description: str | None = "Базовое описание для тестовой съемки",
     ) -> tuple[str, str]:
         """Создает в базе данных мероприятие с фотографиями из списка pics"""
@@ -68,16 +70,32 @@ async def add_pictures_for_event(
         }
 
 
-        cover_file = None
-        if cover:
-            cover_file = await get_valid_upload_files([cover])
+        
+        cover_file = await get_valid_upload_files([cover])
 
         await authenticated_client.post(
             "/api/v1/pictures/",
             data=form_data,
-            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files] + ([("event_cover", (cover_file[0].filename, cover_file[0].file, "image/jpeg"))] if cover_file is not None else []),
+            files=[("files", (file.filename, file.file, "image/jpeg")) for file in files] +
+                   [("event_cover", (cover_file[0].filename, cover_file[0].file, "image/jpeg"))],
         )
 
-        
+        print("Saved pictures for event:", category_name, upload_date)
+
+        await db.commit()
+
+        # event = await db.scalar(
+        #      select(Event)
+        #         .join(Category)
+        #         .options(selectinload(Event.category))
+        #         .filter(
+        #             Category.name == category_name,
+        #             Event.date == check_date(upload_date),
+        #         )
+        # )
+
+        # print(event)
+
+
 
         return category_name, upload_date

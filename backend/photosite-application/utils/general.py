@@ -1,3 +1,5 @@
+import pathlib
+import shutil
 from datetime import datetime, timezone, date as dt_date
 from fastapi import HTTPException, status
 
@@ -18,3 +20,13 @@ def check_date(date: str) -> dt_date:
 def now_utc() -> datetime:
     """Возвращает текущую дату и время в UTC"""
     return datetime.now(timezone.utc)
+
+def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path, delete_old: bool = True) -> None:
+    """Перемещает содержимое из старой директории в новую.
+    Если новая директория не существует, она создается.
+    По умолчанию, старая папка рекурсивно удаляется"""
+    new_dir.mkdir(parents=True, exist_ok=True)
+    for item in old_dir.iterdir():
+        shutil.copy2(item, new_dir / item.name)
+    if delete_old:
+        shutil.rmtree(old_dir, ignore_errors=True)

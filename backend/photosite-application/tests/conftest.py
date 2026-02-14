@@ -1,7 +1,7 @@
 from collections.abc import AsyncGenerator
 import shutil
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 from unittest.mock import patch
 
 
@@ -41,6 +41,7 @@ AsyncSessionLocal: async_sessionmaker[AsyncSession] = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
     expire_on_commit=False,
+    autoflush=False,
 )
 
 

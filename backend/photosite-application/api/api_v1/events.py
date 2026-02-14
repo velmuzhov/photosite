@@ -55,7 +55,7 @@ async def get_events_with_category(
     )
 
 
-@router.put("/{category}/{date}", response_model=EventReadNoPictures)
+@router.patch("/{category}/{date}", response_model=EventReadNoPictures)
 async def edit_event(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
@@ -85,7 +85,7 @@ async def edit_event(
     )
 
 
-@router.patch("/{category}/{date}")
+@router.patch("/{category}/{date}/pictures")
 async def add_pictures(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,

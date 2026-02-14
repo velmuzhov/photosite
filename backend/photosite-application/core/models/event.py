@@ -16,7 +16,7 @@ class Event(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey(
         column="category.id",
     ))
-    cover: Mapped[str | None]
+    cover: Mapped[str]
     description: Mapped[str | None]
     created: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

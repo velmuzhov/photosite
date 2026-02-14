@@ -28,14 +28,14 @@ async def upload_pictures(
     files: Annotated[list[UploadFile], File()],
     category: Annotated[str, Form()],
     date: Annotated[str, Form()],
-    event_cover: Annotated[UploadFile | None, Form()] = None,
+    event_cover: Annotated[UploadFile, Form()],
     event_description: Annotated[str | None, Form()] = None,
 ) -> list[str]:
     """Функция для загрузки нескольких изображений"""
 
     date_obj: dt_date = check_date(date)
 
-    if not check_file_names(files):
+    if not check_file_names(files + [event_cover]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Неверные имена или расширения файлов",
@@ -47,16 +47,12 @@ async def upload_pictures(
     date_dir.mkdir(parents=True, exist_ok=True)
 
     # Сохранение изображения с обложкой категории
-    if event_cover and event_cover.filename:
-        event_cover_path = event_cover.filename
-        event_cover_dir = settings.static.image_dir / "event_covers" / category / date
-        event_cover_dir.mkdir(parents=True, exist_ok=True)
-        file_path = event_cover_dir / event_cover.filename
-        await write_one_file_on_disc(file_path, event_cover)
-        event_cover_path = f"event_covers/{category}/{date}/{event_cover.filename}"
-
-    else:
-        event_cover_path = None
+    event_cover_path = event_cover.filename
+    event_cover_dir = settings.static.image_dir / "event_covers" / category / date
+    event_cover_dir.mkdir(parents=True, exist_ok=True)
+    file_path = event_cover_dir / str(event_cover.filename) # для статического анализатора, но None здесь не будет
+    await write_one_file_on_disc(file_path, event_cover)
+    event_cover_path = f"event_covers/{category}/{date}/{event_cover.filename}"
 
     new_event = await create_event(
         db, category, date_obj, event_cover_path, event_description

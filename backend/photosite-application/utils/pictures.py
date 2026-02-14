@@ -1,3 +1,4 @@
+import shutil
 from typing import Annotated
 from datetime import date as dt_date
 from pathlib import Path
@@ -61,7 +62,7 @@ async def create_event(
     db: AsyncSession,
     category: str,
     date: dt_date,
-    cover: str | None,
+    cover: str,
     description: str | None,
 ) -> Event:
     """Создает и возвращает новую съемку в таблице event, id которой
@@ -73,7 +74,7 @@ async def create_event(
     new_event = Event(
         date=date,
         category_id=category_in_db.id,
-        cover = cover,
+        cover=cover,
         description = description,
     )
     db.add(new_event)
@@ -100,6 +101,7 @@ async def save_file_to_db(
         event_id=event.id,
     )
     db.add(new_picture)
+    await db.flush() # проверка на уровне базы данных, что категория и дата допустимы
 
 async def write_one_file_on_disc(filename: str | Path, file: UploadFile) -> None:
     async with aiofiles.open(filename, "wb") as buffer:
@@ -135,6 +137,7 @@ async def save_multiple_files_to_event(
         await db.commit()
     except Exception as e:
         await db.rollback()
+        shutil.rmtree(dir_for_upload, ignore_errors=True)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Ошибка при добавлении фотографий: {e}",

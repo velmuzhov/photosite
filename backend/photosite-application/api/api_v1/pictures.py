@@ -38,10 +38,10 @@ async def upload_pictures_operation(
     files: Annotated[list[UploadFile], File()],
     category: Annotated[str, Form()],
     date: Annotated[str, Form()],
+    event_cover: Annotated[UploadFile, Form()],
     event_description: Annotated[str | None, Form()] = None,
-    event_cover: Annotated[UploadFile | None, Form()] = None,
 ):
-    # await FastAPICache.clear()
+    await FastAPICache.clear()
     return await pictures_crud.upload_pictures(
         db,
         files,

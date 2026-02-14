@@ -16,10 +16,9 @@ from redis import asyncio as aioredis
 from api import router as api_router
 from logging_config import setup_logging
 
-setup_logging(env=settings.environment)
+setup_logging()
 
 logger = logging.getLogger(__name__)
-
 
 
 @asynccontextmanager
@@ -58,6 +57,7 @@ main_app.add_middleware(
     allow_credentials=True,
 )
 
+
 @main_app.middleware("http")
 async def log_requests(request: Request, call_next: Callable) -> Response:
     start_time = time.time()
@@ -69,7 +69,7 @@ async def log_requests(request: Request, call_next: Callable) -> Response:
             "path": request.url.path,
             "client_ip": request.client.host if request.client else "unknown",
             "user_agent": request.headers.get("user-agent", "unknown"),
-        }
+        },
     )
 
     try:
@@ -80,7 +80,7 @@ async def log_requests(request: Request, call_next: Callable) -> Response:
             extra={
                 "status_code": response.status_code,
                 "processing_time": f"{process_time:.4f}",
-            }
+            },
         )
         return response
     except Exception as e:

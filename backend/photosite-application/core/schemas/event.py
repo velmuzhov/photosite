@@ -6,7 +6,7 @@ from core.schemas.picture import PictureRead
 class BaseEvent(BaseModel):
     category_id: int
     date: dt_date
-    cover: str | None
+    cover: str
     description: str | None
 
 class EventUpdate(BaseModel):
