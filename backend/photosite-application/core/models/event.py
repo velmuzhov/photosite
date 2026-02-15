@@ -23,6 +23,7 @@ class Event(Base):
         default=now_utc,
         server_default=func.timezone("UTC", func.now()),
     )
+    active: Mapped[bool] = mapped_column(default=True, server_default="true")
 
 
     __table_args__ = (

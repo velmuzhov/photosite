@@ -12,7 +12,6 @@ from core.config import settings
 from core.models.event import Event
 from core.models.category import Category
 from core.models.picture import Picture
-from core.schemas.event import EventRead, EventUpdate
 from utils.general import check_date, move_files
 from utils.pictures import (
     check_file_names,
@@ -28,6 +27,7 @@ async def check_event_exists(
     category: str,
     date: str,
     with_pictures: bool = False,
+    is_active: bool = True,
 ) -> Event:
     """Проверяет существование съемки по ее категории и дате"""
     date_obj = check_date(date)
@@ -53,6 +53,13 @@ async def check_event_exists(
                 Event.date == date_obj,
             )
         )
+
+    if is_active:
+        if event and event.active is False:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Съемка была удалена",
+            )
 
     if event is None:
         raise HTTPException(
@@ -116,30 +123,39 @@ async def delete_event(
 async def get_events_by_category(
     db: AsyncSession,
     category: str,
+    limit: int = settings.querysettings.limit,
+    offset: int = settings.querysettings.offset,
+    is_active: bool = True,
 ) -> Sequence[Event]:
     """Возвращает последовательность съемок,
     относящихся к данной категории
     от наиболее новых к самым старым."""
-    result = await db.scalars(
+    stmt = (
         select(Event)
         .join(Category)
         .filter(Category.name == category)
+        .limit(limit)
+        .offset(offset)
         .order_by(Event.date.desc())
     )
+
+    if is_active:
+        stmt = stmt.filter(Event.active.is_(True))
+
+    result = await db.scalars(stmt)
     return result.all()
 
 
 async def get_events_by_date_created(
     db: AsyncSession,
-    limit: int | None = None,
+    limit: int = settings.querysettings.limit,
+    offset: int = settings.querysettings.offset,
 ) -> Sequence[Event]:
     """
     Возвращает последовательность съемок
     от последних созданных к первым созданным.
     """
-    stmt = select(Event).order_by(Event.created.desc())
-    if limit:
-        stmt = stmt.limit(limit)
+    stmt = select(Event).order_by(Event.created.desc()).limit(limit).offset(offset)
     result = await db.scalars(stmt)
 
     return result.all()
@@ -180,92 +196,151 @@ async def add_pictures_to_existing_event(
     )
 
 
-async def edit_event_data(
+async def edit_event_base_data(
     db: AsyncSession,
     category: str,
     date: str,
-    new_data: EventUpdate,
+    new_category: str | None = None,
+    new_date: str | None = None,
 ) -> Event:
     # Проверка на передачу пустых данных
-    if not any([new_data.date, new_data.description, new_data.category]):
+    if new_category is None and new_date is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Нет данных для обновления",
         )
-    event: Event = await check_event_exists(db, category, date, with_pictures=True)
-
-    cat_to_db: str = new_data.category or category
-    date_to_db: str = new_data.date or date
-    descr_to_db: str | None = new_data.description or event.description
-
-    old_path: pathlib.Path | None = None
-    new_path: pathlib.Path | None = None
-    new_cover_path: pathlib.Path | None = None
-    old_cover_path: pathlib.Path | None = (
-        settings.static.image_dir / "event_covers" / event.cover
-        if event.cover
-        else None
+    event: Event = await check_event_exists(
+        db, category, date, with_pictures=True, is_active=False
     )
 
+    cat_to_db: str = new_category or category
+    date_to_db: str = new_date or date
 
-    # Проверка корректности новой категории
-    if new_data.category:
-        category_obj = await db.scalar(
-            select(Category).filter(Category.name == new_data.category)
+    if cat_to_db != category:
+        category_exists = await db.scalar(
+            select(Category).filter(Category.name == cat_to_db)
         )
-        if category_obj is None:
+        if category_exists is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Такой категории не существует",
             )
-        event.category_id = category_obj.id
+        # замена категории
+        event.category = category_exists
 
-    # Проверка, что съемки с новой категорией и датой не существует
-    if date_to_db != date or cat_to_db != category:
-        existing_event = await db.scalar(
-            select(Event)
-            .join(Category)
-            .filter(
-                Category.name == (cat_to_db),
-                Event.date == check_date(date_to_db),
-            )
+    for picture in event.pictures:
+        picture.path = f"{cat_to_db}/{date_to_db}/{picture.name}"
+
+    existing_event_with_new_data = await db.scalar(
+        select(Event)
+        .join(Category)
+        .filter(
+            Category.name == cat_to_db,
+            Event.date == check_date(date_to_db),
+            Event.id != event.id,
         )
-        if existing_event:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Такая съемка уже существует",
-            )
+    )
+    if existing_event_with_new_data:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Съемка с такими данными уже существует",
+        )
+    # замена даты
+    event.date = check_date(date_to_db) if date_to_db != date else event.date
 
-        # Обновление пути к папке с фотографиями съемки
-        if event.pictures:
-            old_path = settings.static.image_dir / category / date
-        new_path = settings.static.image_dir / cat_to_db / date_to_db
-
-        for picture in event.pictures:
-            picture.path = f"{cat_to_db}/{date_to_db}/{picture.name}"
-
-    # Обновление данных
-    if new_data.date:
-        event.date = check_date(date_to_db)
-    if new_data.description:
-        event.description = descr_to_db
-
-    if event.cover:
-        old_cover_path: pathlib.Path | None = settings.static.image_dir / "event_covers" / event.cover
-        new_cover_path: pathlib.Path | None = settings.static.image_dir / "event_covers" / cat_to_db / date_to_db
-       
-        if old_cover_path != new_cover_path:
-            move_files(old_cover_path, new_cover_path)
+    # замена пути к обложке
+    event_cover_file_name = event.cover.split("/")[-1]
+    event.cover = f"event_covers/{cat_to_db}/{date_to_db}/{event_cover_file_name}"
 
     await db.commit()
     await db.refresh(event)
 
+    # создание новых директорий для фотографий и обложки, если они не существуют
+    old_pictures_dir = settings.static.image_dir / category / date
+    new_pictures_dir = settings.static.image_dir / cat_to_db / date_to_db
+    old_cover_dir = settings.static.image_dir / "event_covers" / category / date
+    new_cover_dir = settings.static.image_dir / "event_covers" / cat_to_db / date_to_db
+
+    # обновление путей к фотографиям в базе данных
+    for picture in event.pictures:
+        picture.path = str(new_pictures_dir / picture.name)
+
+    move_files(old_pictures_dir, new_pictures_dir)  # перенос фотографий
+    move_files(old_cover_dir, new_cover_dir)  # перенос обложки
+
+    return event
 
 
-    # Перемещение фотографий в новую папку с новым именем
-    # Проверить, не упадет ли после refresh со старой папкой
-    if old_path and new_path and old_path != new_path:
-        move_files(old_path, new_path)
+async def edit_event_description(
+    db: AsyncSession,
+    category: str,
+    date: str,
+    new_description: str,
+) -> Event:
+    """Изменение описания съемки."""
+    event = await check_event_exists(db, category, date, is_active=False)
+    event.description = new_description
+
+    await db.commit()
+    await db.refresh(event)
+
+    return event
+
+
+async def edit_event_cover(
+    db: AsyncSession,
+    category: str,
+    date: str,
+    new_cover: UploadFile,
+) -> Event:
+    """Изменение обложки съемки. Старая обложка удаляется с диска, а новая сохраняется на ее место."""
+    event = await check_event_exists(db, category, date, is_active=False)
+
+    if not check_file_name(new_cover.filename):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Неверное имя или расширение файла",
+        )
+
+    # создание директории для обложки, если она не существует (для перестраховки, она должна была быть создана при загрузке обложки при создании съемки)
+    dir_for_cover = settings.static.image_dir / "event_covers" / category / date
+    dir_for_cover.mkdir(parents=True, exist_ok=True)
+
+    # удаление старой обложки с диска
+    old_cover_path = settings.static.image_dir / event.cover
+    if old_cover_path.exists():
+        old_cover_path.unlink()
+
+    # сохранение нового пути к обложке в базе данных
+    new_cover_path = (
+        settings.static.image_dir
+        / "event_covers"
+        / category
+        / date
+        / str(new_cover.filename)
+    )
+    event.cover = str(new_cover_path.relative_to(settings.static.image_dir))
+
+    await db.commit()
+    await db.refresh(event)
+
+    # сохранение новой обложки на диске
+    await write_one_file_on_disc(new_cover_path, new_cover)
+
+    return event
+
+
+async def toggle_event_active_status(
+    db: AsyncSession,
+    category: str,
+    date: str,
+) -> Event:
+    """Переключение статуса активности съемки. Если съемка была активной, она становится неактивной, и наоборот."""
+    event = await check_event_exists(db, category, date, is_active=False)
+    event.active = not event.active
+
+    await db.commit()
+    await db.refresh(event)
 
     return event
 
@@ -281,26 +356,5 @@ async def delete_event_description(
 
     await db.commit()
     await db.refresh(event)
-
-    return event
-
-
-async def delete_event_cover(
-    db: AsyncSession,
-    category: str,
-    date: str,
-) -> Event:
-    """Удаление обложки съемки из базы данных вместе с физическим удалением файла"""
-    event = await check_event_exists(db, category, date)
-    cover = event.cover
-    if cover is None:
-        return event
-
-    event.cover = None
-    await db.commit()
-    await db.refresh(event)
-
-    file_to_delete = settings.static.image_dir / "event_covers" / cover
-    file_to_delete.unlink(missing_ok=True)
 
     return event

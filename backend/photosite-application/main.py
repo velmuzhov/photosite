@@ -28,12 +28,14 @@ async def lifespan(app: FastAPI):
         encoding="utf-8",
         decode_responses=True,
     )
+    print(redis)
     FastAPICache.init(
         RedisBackend(redis),
         prefix=settings.redis.prefix,
     )
     yield
     print("Dispose engine")
+    await redis.close()
     await db_helper.dispose()
 
 
@@ -56,6 +58,7 @@ main_app.add_middleware(
     allow_methods=["*"],
     allow_credentials=True,
 )
+
 
 
 @main_app.middleware("http")
@@ -96,6 +99,7 @@ main_app.include_router(
 
 @main_app.get("/")
 async def work_check():
+
     return {"message": "API is running... still What if I change it?"}
 
 

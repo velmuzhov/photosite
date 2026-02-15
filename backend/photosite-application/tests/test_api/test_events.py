@@ -22,13 +22,13 @@ class TestGetOneEventPictures:
         """Тестирование получения одной съемки с фотографиями.
         Доступно без авторизации"""
         category_name, upload_date = await add_pictures_for_event(
-            authenticated_client,
-            db,
+            authenticated_client, db, cover="555.jpg"
         )
 
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             pics=["321.jpg", "654.jpeg"],
             category_name="portrait",
             upload_date="2024-05-29",
@@ -59,6 +59,7 @@ class TestGetOneEventPictures:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="portrait",
             upload_date="2024-05-30",
         )
@@ -83,6 +84,7 @@ class TestGetEventsWithCategory:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="555.jpg",
             category_name="wedding",
             upload_date="2024-05-28",
         )
@@ -90,6 +92,7 @@ class TestGetEventsWithCategory:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="wedding",
             upload_date="2024-05-31",
         )
@@ -97,6 +100,7 @@ class TestGetEventsWithCategory:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="999.jpg",
             category_name="portrait",
             upload_date="2024-06-20",
         )
@@ -104,6 +108,7 @@ class TestGetEventsWithCategory:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="888.jpg",
             category_name="wedding",
             upload_date="2024-07-20",
         )
@@ -130,6 +135,7 @@ class TestGetEventsWithCategory:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="555.jpg",
             category_name="wedding",
             upload_date="2024-05-28",
         )
@@ -156,6 +162,7 @@ class TestAddPicturesToExistingEvent:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             pics=["123.jpg", "456.jpeg"],
             category_name="portrait",
             upload_date="2024-05-29",
@@ -194,6 +201,7 @@ class TestAddPicturesToExistingEvent:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="portrait",
             upload_date="2024-05-29",
         )
@@ -222,6 +230,7 @@ class TestAddPicturesToExistingEvent:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="portrait",
             upload_date="2024-05-29",
         )
@@ -253,6 +262,7 @@ class TestDeleteEvent:
         category_name, upload_date = await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="wedding",
             upload_date="2024-05-28",
         )
@@ -279,6 +289,7 @@ class TestDeleteEvent:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="wedding",
             upload_date="2024-05-28",
         )
@@ -323,6 +334,7 @@ class TestGetAllEvents:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="555.jpg",
             category_name="wedding",
             upload_date="2024-05-28",
         )
@@ -330,6 +342,7 @@ class TestGetAllEvents:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="wedding",
             upload_date="2024-05-31",
         )
@@ -337,6 +350,7 @@ class TestGetAllEvents:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="999.jpg",
             category_name="wedding",
             upload_date="2024-07-20",
         )
@@ -396,16 +410,10 @@ class TestEditEventData:
                 "new_date": "2024-06-01",
                 "new_description": "Обновленное описание",
             },
-            files=[
-                (
-                    "new_cover",
-                    ("300.jpg", io.BytesIO(b"fake image content"), "image/jpeg"),
-                )
-            ],
         )
 
         assert response.status_code == 200
-        assert response.json()["cover"].endswith("300.jpg")
+        assert response.json()["cover"].endswith("100.jpg")
 
     @pytest.mark.asyncio
     async def test_edit_event_with_existing_event_data(
@@ -444,16 +452,11 @@ class TestEditEventData:
                 "new_date": "2024-05-30",
                 "new_description": "Обновленное описание",
             },
-            files=[
-                (
-                    "new_cover",
-                    ("300.jpg", io.BytesIO(b"fake image content"), "image/jpeg"),
-                )
-            ],
+  
         )
 
         assert response.status_code == 409
-        assert response.json()["detail"] == "Такая съемка уже существует"
+        assert response.json()["detail"] == "Съемка с такими данными уже существует"
 
 
 class TestDeleteDescriptionOfEvent:
@@ -470,6 +473,7 @@ class TestDeleteDescriptionOfEvent:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="wedding",
             upload_date="2024-05-28",
             event_description="Описание для удаления",
@@ -493,6 +497,7 @@ class TestDeleteDescriptionOfEvent:
         await add_pictures_for_event(
             authenticated_client,
             db,
+            cover="777.jpg",
             category_name="wedding",
             upload_date="2024-05-28",
             event_description=None,
@@ -516,73 +521,6 @@ class TestDeleteDescriptionOfEvent:
 
         response = await authenticated_client.delete(
             f"/api/v1/events/wedding/2024-05-28/description"
-        )
-
-        assert response.status_code == 404
-        data = response.json()
-        assert data["detail"] == "Такой съемки не существует"
-
-
-class TestDeleteCoverOfEvent:
-    """Тестирование удаления обложки съемки. Конечная точка доступна только с авторизацией."""
-
-    @pytest.mark.asyncio
-    async def test_delete_cover_of_event_success(
-        self,
-        authenticated_client: AsyncClient,
-        db: AsyncSession,
-    ):
-        """Тестирование удаления обложки съемки. Проверяется, что после удаления
-        обложки, остальные данные о съемке сохраняются."""
-        await add_pictures_for_event(
-            authenticated_client,
-            db,
-            category_name="wedding",
-            upload_date="2024-05-28",
-            cover="000.jpg",
-        )
-
-        response = await authenticated_client.delete(
-            f"/api/v1/events/wedding/2024-05-28/cover"
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["cover"] is None
-
-    @pytest.mark.asyncio
-    async def test_delete_cover_of_event_without_cover(
-        self,
-        authenticated_client: AsyncClient,
-        db: AsyncSession,
-    ):
-        """Тестирование удаления обложки съемки, у которой изначально нет обложки."""
-        await add_pictures_for_event(
-            authenticated_client,
-            db,
-            category_name="wedding",
-            upload_date="2024-05-28",
-            cover=None,
-        )
-
-        response = await authenticated_client.delete(
-            f"/api/v1/events/wedding/2024-05-28/cover"
-        )
-        data = response.json()
-
-        assert response.status_code == 200
-        assert data["cover"] is None
-
-    @pytest.mark.asyncio
-    async def test_delete_cover_of_nonexistent_event(
-        self,
-        authenticated_client: AsyncClient,
-        db: AsyncSession,
-    ):
-        """Тестирование удаления обложки несуществующей съемки."""
-
-        response = await authenticated_client.delete(
-            f"/api/v1/events/wedding/2024-05-28/cover"
         )
 
         assert response.status_code == 404

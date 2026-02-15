@@ -29,7 +29,7 @@ class Auth(BaseModel):
     algorithm: str = "HS256"
 
 class RedisConfig(BaseModel):
-    url: str = "redis://localhost:6379"
+    url: str = "redis://localhost"
     prefix: str = "fastapi-cache"
 
 class DatabaseConfig(BaseModel):
@@ -46,6 +46,13 @@ class DatabaseConfig(BaseModel):
         "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
         "pk": "pk_%(table_name)s",
     }
+
+class QueryConfig(BaseModel):
+    limit: int = 10
+    offset: int = 0
+
+class CashConfig(BaseModel):
+    term: int = 10
 
 
 class Settings(BaseSettings):
@@ -65,6 +72,8 @@ class Settings(BaseSettings):
     static: Static = Static()
     auth: Auth = Auth()
     redis: RedisConfig = RedisConfig()
+    querysettings: QueryConfig = QueryConfig()
+    cache: CashConfig = CashConfig()
 
     environment: str = ""
 

@@ -1,18 +1,26 @@
 from datetime import datetime, date as dt_date
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from core.schemas.picture import PictureRead
 
 
-class BaseEvent(BaseModel):
+class DescriptionValidatorMixin:
+    @field_validator("description")
+    def validate_description(cls, value):
+        if value is not None and len(value) == 0:
+            raise ValueError("Описание не может быть пустой строкой")
+        return value
+
+class BaseEvent(BaseModel, DescriptionValidatorMixin):
     category_id: int
     date: dt_date
     cover: str
     description: str | None
+    created: datetime
+    active: bool
 
-class EventUpdate(BaseModel):
-    date: str | None = None
-    description: str | None = None
-    category: str | None = None
+
+class EventDescriptionUpdate(BaseModel, DescriptionValidatorMixin):
+    description: str
 
 
 class EventReadNoPictures(BaseEvent):
@@ -30,7 +38,6 @@ class EventRead(BaseEvent):
     """
 
     id: int
-    created: datetime
     pictures: list[PictureRead]
 
  
