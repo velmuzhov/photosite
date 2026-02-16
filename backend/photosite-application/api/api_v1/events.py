@@ -56,6 +56,9 @@ async def get_events_with_category(
     в обратном хронологическом порядке.
     """
 
+    # тестирую спиннер в Реакте
+    # await asyncio.sleep(2)
+
     result = await events_crud.get_events_by_category(
         db,
         category,

@@ -10,6 +10,7 @@ from core.models.category import Category
 from core.models.event import Event
 from sqlalchemy import select
 
+
 from core.config import settings
 
 
@@ -100,8 +101,10 @@ async def save_file_to_db(
         path=file_rel_path,
         event_id=event.id,
     )
+    
     db.add(new_picture)
     await db.flush() # проверка на уровне базы данных, что категория и дата допустимы
+        
 
 async def write_one_file_on_disc(filename: str | Path, file: UploadFile) -> None:
     async with aiofiles.open(filename, "wb") as buffer:
@@ -116,7 +119,9 @@ async def save_multiple_files_to_event(
         files_to_add: list[UploadFile],
         dir_for_upload: Path,
 ) -> list[str]:
-    added_files = []
+    added_files: list[str] = []
+
+    filenames: list[str] = []
 
     for file in files_to_add:
         if not file.filename:
@@ -124,14 +129,23 @@ async def save_multiple_files_to_event(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Загружаемый файл должен иметь имя",
             )
-        await write_one_file_on_disc(dir_for_upload / file.filename, file)
+        if file.filename in filenames: #type: ignore
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Необходимо загружать файлы с уникальными именами",
+            )
+        filenames.append(file.filename)
+    for file in files_to_add:    
         await save_file_to_db(
             db,
-            file.filename,
+            file.filename, #type: ignore
             event,
             f"{category}/{date}/{file.filename}",
         )
-        added_files.append(file.filename)
+        added_files.append(str(file.filename))
+        
+    for file in files_to_add:
+        await write_one_file_on_disc(dir_for_upload / file.filename, file) # type: ignore
 
     try:
         await db.commit()

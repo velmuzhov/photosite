@@ -177,6 +177,12 @@ async def add_pictures_to_existing_event(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Неверные имена или расширения файлов",
         )
+    if len(files) != len([file.filename for file in files if file.filename is not None]):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Необходимо добавлять файлы с уникальными именами"
+        )
+
     existing_files = await db.scalars(select(Picture).filter(Picture.event == event))
     existing_file_names: list[str] = [file.name for file in existing_files.all()]
 

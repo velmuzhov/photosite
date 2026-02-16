@@ -33,6 +33,8 @@ async def upload_pictures(
 ) -> list[str]:
     """Функция для загрузки нескольких изображений"""
 
+    files = list(set(files))
+
     date_obj: dt_date = check_date(date)
 
     if not check_file_names(files + [event_cover]):
@@ -51,21 +53,29 @@ async def upload_pictures(
     event_cover_dir = settings.static.image_dir / "event_covers" / category / date
     event_cover_dir.mkdir(parents=True, exist_ok=True)
     file_path = event_cover_dir / str(event_cover.filename) # для статического анализатора, но None здесь не будет
-    await write_one_file_on_disc(file_path, event_cover)
     event_cover_path = f"event_covers/{category}/{date}/{event_cover.filename}"
 
     new_event = await create_event(
         db, category, date_obj, event_cover_path, event_description
     )
+    
+    try:
+        result = await save_multiple_files_to_event(
+            db=db,
+            event=new_event,
+            category=category,
+            date=date,
+            files_to_add=files,
+            dir_for_upload=date_dir,
+        )
+    except Exception:
+        await db.delete(new_event)
+        await db.commit()
+        raise
 
-    return await save_multiple_files_to_event(
-        db=db,
-        event=new_event,
-        category=category,
-        date=date,
-        files_to_add=files,
-        dir_for_upload=date_dir,
-    )
+    await write_one_file_on_disc(file_path, event_cover)
+
+    return result
 
 
 async def delete_pictures(
