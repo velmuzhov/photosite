@@ -47,6 +47,7 @@ async def check_event_exists(
         event = await db.scalar(
             select(Event)
             .join(Category)
+            .join(Picture)
             .options(selectinload(Event.pictures))
             .filter(
                 Category.name == category,

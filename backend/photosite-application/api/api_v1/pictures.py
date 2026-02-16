@@ -56,7 +56,7 @@ async def upload_pictures_operation(
 async def delete_pictures_operation(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
-    pictures: Annotated[list[str], Form()],
+    pictures: list[str],
 ) -> dict[str, str]:
     try:
         await pictures_crud.delete_pictures(db, pictures)

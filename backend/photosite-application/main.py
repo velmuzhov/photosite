@@ -42,6 +42,7 @@ async def lifespan(app: FastAPI):
 main_app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
+    docs_url= "/docs" if settings.environment == "development" else None
 )
 
 main_app.mount(

@@ -86,21 +86,21 @@ async def delete_pictures(
     из базы данных по их путям.
     При успешном удалении из базы данных удаляются файлы
     на диске."""
-    async with db.begin():
-        for picture_path in set(
-            picture_paths
-        ):  # удаление дубликатов, должно сработать одно удаление без вызова исключения
-            picture = await db.scalar(
-                select(Picture).filter(Picture.path == picture_path)
-            )
-            if picture is None:
-                raise ValueError(f"Такого не существует: {picture_path}")
-            await db.delete(picture)
-        await db.flush()
-        for picture_path in picture_paths:
-            file_path = settings.static.image_dir / picture_path
-            try:
-                file_path.unlink(missing_ok=True)
-            except Exception as e:
-                # залогировать
-                print(f"Ошибка при удалении {file_path}: {e}")
+    
+    for picture_path in set(
+        picture_paths
+    ):  # удаление дубликатов, должно сработать одно удаление без вызова исключения
+        picture = await db.scalar(
+            select(Picture).filter(Picture.path == picture_path)
+        )
+        if picture is None:
+            raise ValueError(f"Такого изображения не существует: {picture_path}")
+        await db.delete(picture)
+    await db.commit()
+    for picture_path in picture_paths:
+        file_path = settings.static.image_dir / picture_path
+        try:
+            file_path.unlink(missing_ok=True)
+        except Exception as e:
+            # залогировать
+            print(f"Ошибка при удалении {file_path}: {e}")
