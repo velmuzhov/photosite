@@ -1,44 +1,201 @@
+* {
+  box-sizing: border-box;
+}
+
 .event-page {
-  max-width: 1200px;
+  position: relative;
+  min-height: 100vh;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   margin: 0 auto;
+  max-width: 100%;
+  overflow-x: hidden; /* Запрещаем горизонтальную прокрутку */
 }
 
-.images-grid {
+/* Галерея с фиксированным соотношением 5:4 (высота : ширина) */
+.gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.3rem;          /* Уменьшено с 1rem → 0.3rem (~в 3 раза) */
+  margin: 1.5rem 0;
+  width: 100%;
+  padding: 0 1rem;
+  justify-items: center;
 }
 
-.image-item {
+.gallery-item.ratio-5-4 {
   position: relative;
   overflow: hidden;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.image-responsive {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
   width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
+  padding-top: 125%; /* 5:4 = 125% */
 }
 
-@media (max-width: 480px) {
-  .images-grid {
+.gallery-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover .gallery-image {
+  transform: scale(1.05);
+}
+
+/* Адаптивные правила для количества колонок */
+@media (max-width: 575px) {
+  /* Мобильные: 1 колонка */
+  .gallery-grid {
     grid-template-columns: 1fr;
+    padding: 0 0.5rem;
+    gap: 0.25rem;     /* Уменьшено с 0.75rem → 0.25rem */
   }
 }
 
+@media (min-width: 576px) and (max-width: 767px) {
+  /* Маленькие планшеты: 2 колонки */
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;     /* Уменьшено с 1rem → 0.3rem */
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  /* Планшеты/ноутбуки: 3 колонки */
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;     /* Уменьшено с 1.25rem → 0.4rem */
+  }
+}
+
+@media (min-width: 992px) {
+  /* Десктопы: максимум 4 колонки */
+  .gallery-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;     /* Уменьшено с 1.5rem → 0.5rem */
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  /* Большие экраны: контролируем ширину */
+  .gallery-grid {
+    max-width: calc(100% - 4rem);
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .gallery-item.ratio-5-4 {
+    min-width: 280px;
+  }
+}
+
+/* Кнопка «Наверх» */
+.btn-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-to-top.visible {
+  opacity: 0.9;
+  pointer-events: auto;
+}
+
+.btn-to-top:hover {
+  transform: scale(1.1);
+  background-color: #0056b3;
+}
+
+.btn-to-top:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+}
+
+/* Лайтбокс */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  cursor: zoom-out;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.lightbox-close:hover {
+  background-color: #f0f0f0;
+}
+
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Дополнительные стили */
 .event-description {
+  margin: 1.5rem 0;
   line-height: 1.6;
 }
 
 .btn {
-  padding: 10px 20px;
-  border-radius: 6px;
-  text-decoration: none;
   display: inline-block;
-  transition: background-color 0.3s ease;
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .btn-primary {
@@ -51,6 +208,44 @@
   color: white;
 }
 
-.btn:hover {
-  opacity: 0.9;
+.text-primary {
+  color: #007bff;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+/* Утилиты */
+.d-flex {
+  display: flex;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.p-3 {
+  padding: 1rem;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.w-fit {
+  width: fit-content;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
 }

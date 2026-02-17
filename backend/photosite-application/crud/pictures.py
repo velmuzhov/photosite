@@ -86,6 +86,12 @@ async def delete_pictures(
     из базы данных по их путям.
     При успешном удалении из базы данных удаляются файлы
     на диске."""
+
+    if len(picture_paths) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Нужно выбрать хотя бы один файл для удаления",
+        )
     
     for picture_path in set(
         picture_paths

@@ -132,7 +132,8 @@ class TestUploadPictures:
         response: Response = await authenticated_client.post(
             "/api/v1/pictures/",
             data=form_data,
-            files=[("files", ("abc.jpg", file.file, "image/jpeg"))] + [("event_cover", ("500.jpg", cover.file, "image/jpeg"))],
+            files=[("files", ("abc.jpg", file.file, "image/jpeg"))]
+            + [("event_cover", ("500.jpg", cover.file, "image/jpeg"))],
         )
 
         assert response.status_code == 400
@@ -194,7 +195,8 @@ class TestUploadPictures:
         response: Response = await authenticated_client.post(
             "/api/v1/pictures/",
             data=form_data,
-            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files] + [("event_cover", (cover.filename, cover.file, "image/jpeg"))],
+            files=[("files", (f.filename, f.file, "image/jpeg")) for f in files]
+            + [("event_cover", (cover.filename, cover.file, "image/jpeg"))],
         )
 
         assert response.status_code == 400
@@ -386,7 +388,7 @@ class TestDeletePictures:
         db: AsyncSession,
     ):
         """Тестирование успешного удаления нескольких фотографий."""
-        
+
         category_name, upload_date = await add_pictures_for_event(
             authenticated_client, db, cover="700.jpg"
         )
@@ -394,9 +396,7 @@ class TestDeletePictures:
         file1_path = f"{category_name}/{upload_date}/123.jpg"
         file2_path = f"{category_name}/{upload_date}/456.jpeg"
 
-
         pics = await db.scalars(select(Picture))
-
 
         pics = pics.all()
         print([pic.name for pic in pics] if pics else "No pictures in DB")
@@ -406,7 +406,7 @@ class TestDeletePictures:
         response = await authenticated_client.request(
             method="DELETE",
             url="/api/v1/pictures/",
-            data={"pictures": [file1_path, file2_path]},
+            json=[file1_path, file2_path],
         )
 
         print(response.status_code)
@@ -437,7 +437,7 @@ class TestDeletePictures:
         response = await authenticated_client.request(
             "DELETE",
             "/api/v1/pictures/",
-            data={"pictures": ["missing1.jpg", "missing2.jpg"]},
+            json=["missing1.jpg", "missing2.jpg"],
         )
 
         assert response.status_code == 400
@@ -455,7 +455,7 @@ class TestDeletePictures:
         response = await authenticated_client.request(
             "DELETE",
             "/api/v1/pictures/",
-            data={"pictures": []},
+            json=[],
         )
 
         print(response.status_code)
@@ -463,8 +463,9 @@ class TestDeletePictures:
         print(response.json())
 
         assert response.status_code == 422
-        assert response.json()["detail"][0]["loc"] == ["body", "pictures"]
-        assert response.json()["detail"][0]["msg"] == "Field required"
+        assert (
+            response.json()["detail"] == "Нужно выбрать хотя бы один файл для удаления"
+        )
 
     @pytest.mark.asyncio
     async def test_delete_with_duplicates(
@@ -487,7 +488,9 @@ class TestDeletePictures:
         ]
 
         response = await authenticated_client.request(
-            "DELETE", "api/v1/pictures/", data={"pictures": files_to_delete}
+            "DELETE",
+            "api/v1/pictures/",
+            json=files_to_delete,
         )
 
         assert response.status_code == 200

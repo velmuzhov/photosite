@@ -48,8 +48,7 @@ class DatabaseConfig(BaseModel):
     }
 
 class QueryConfig(BaseModel):
-    limit: int = 10
-    offset: int = 0
+    limit: int = 24
 
 class CashConfig(BaseModel):
     term: int = 10

@@ -48,8 +48,9 @@ async def get_one_event_pictures(
 async def get_events_with_category(
     db: get_async_db,
     category: Annotated[str, Path()],
+    response: Response,
     limit: Annotated[int, Query()] = settings.querysettings.limit,
-    offset: Annotated[int, Query()] = settings.querysettings.offset,
+    page: Annotated[int, Query()] = 1,
 ):
     """
     Функция операции для получения всех съемок из данной категории
@@ -59,12 +60,14 @@ async def get_events_with_category(
     # тестирую спиннер в Реакте
     # await asyncio.sleep(2)
 
-    result = await events_crud.get_events_by_category(
+    total_count, result = await events_crud.get_events_by_category(
         db,
         category,
         limit=limit,
-        offset=offset,
+        page=page,
     )
+
+    response.headers["X-Total-Count"] = str(total_count)
 
     return result
 
@@ -183,7 +186,7 @@ async def get_all_events(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
     limit: Annotated[int, Query()] = settings.querysettings.limit,
-    offset: Annotated[int, Query()] = settings.querysettings.offset,
+    page: Annotated[int, Query()] = 1,
 ):
     """Возвращает limit последних созданных съемок"""
     return await events_crud.get_events_by_date_created(db, limit)

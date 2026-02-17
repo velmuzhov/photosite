@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Annotated, Any
 from collections.abc import Sequence
 import shutil
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Form, HTTPException, status, Depends, Path, File, UploadFile
@@ -125,18 +125,31 @@ async def get_events_by_category(
     db: AsyncSession,
     category: str,
     limit: int = settings.querysettings.limit,
-    offset: int = settings.querysettings.offset,
+    page: int = 1,
     is_active: bool = True,
-) -> Sequence[Event]:
+) -> tuple[int, Sequence[Event]]:
     """Возвращает последовательность съемок,
     относящихся к данной категории
     от наиболее новых к самым старым."""
+    event_count_stmt = (
+        select(func.count(Event.id))
+        .join(Category)
+        .filter(Category.name == category)
+    )
+
+    if is_active:
+        event_count_stmt.filter(Event.active.is_(True))
+
+    total_events: int = await db.scalar(event_count_stmt) or 0
+
+    
+
     stmt = (
         select(Event)
         .join(Category)
         .filter(Category.name == category)
         .limit(limit)
-        .offset(offset)
+        .offset(limit * (page - 1))
         .order_by(Event.date.desc())
     )
 
@@ -144,19 +157,19 @@ async def get_events_by_category(
         stmt = stmt.filter(Event.active.is_(True))
 
     result = await db.scalars(stmt)
-    return result.all()
+    return total_events, result.all()
 
 
 async def get_events_by_date_created(
     db: AsyncSession,
     limit: int = settings.querysettings.limit,
-    offset: int = settings.querysettings.offset,
+    page: int = 1,
 ) -> Sequence[Event]:
     """
     Возвращает последовательность съемок
     от последних созданных к первым созданным.
     """
-    stmt = select(Event).order_by(Event.created.desc()).limit(limit).offset(offset)
+    stmt = select(Event).order_by(Event.created.desc()).limit(limit).offset(limit * (page - 1))
     result = await db.scalars(stmt)
 
     return result.all()

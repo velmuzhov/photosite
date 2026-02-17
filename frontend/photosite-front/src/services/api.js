@@ -28,10 +28,15 @@ export const setAuthToken = (token) => {
 };
 
 // Получение съёмок по категории
-export const getEventsByCategory = async (category) => {
+export const getEventsByCategory = async (category, page = 1, limit = 24) => {
   try {
-    const response = await apiClient.get(`/events/${category}`);
-    return response.data;
+    const response = await apiClient.get(`/events/${category}`, {
+      params: {
+        page,
+        limit,
+      }
+    });
+    return response;
   } catch (error) {
     console.error('Ошибка загрузки съёмок:', error);
     throw error;

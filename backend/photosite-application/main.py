@@ -58,6 +58,8 @@ main_app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_credentials=True,
+    allow_headers=["*"],
+    expose_headers=["x-total-count", "x-fastapi-cache"],
 )
 
 
