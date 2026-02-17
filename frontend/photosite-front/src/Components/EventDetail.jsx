@@ -100,7 +100,7 @@ const EventPage = () => {
           : 'семьям'}
       </Link>
 
-      <h1 className="mb-4">{event.description || ''}</h1>
+      <h1 className="mb-4 fs-normal text-muted">{event.description || ''}</h1>
 
       {/* Галерея с соотношением 5:4 */}
       <div className="gallery-grid">
@@ -120,12 +120,6 @@ const EventPage = () => {
         ))}
       </div>
 
-      {/* Описание */}
-      {event.description && (
-        <div className="event-description bg-white p-4 rounded shadow mb-4">
-          <p className="mb-0">{event.description}</p>
-        </div>
-      )}
 
       <Link to="/" className="btn btn-secondary">
         Вернуться на главную

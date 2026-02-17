@@ -43,7 +43,7 @@ const EventCard = ({ event, category }) => {
           <h3 className="event-card__date fs-small text-dark mb-0">{date}</h3>
           {event.description && (
             <p className="event-card__description text-muted fs-small mb-0">
-              {event.description}
+              {event.description.length < 50 ? event.description : event.description.slice(0, 47) + '...'}
             </p>
           )}
         </div>
