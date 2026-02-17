@@ -150,7 +150,7 @@ async def get_events_by_category(
         .filter(Category.name == category)
         .limit(limit)
         .offset(limit * (page - 1))
-        .order_by(Event.date.desc())
+        .order_by(Event.created.desc())
     )
 
     if is_active:

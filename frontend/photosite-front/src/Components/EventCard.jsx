@@ -40,7 +40,7 @@ const EventCard = ({ event, category }) => {
 
         {/* Информация о событии */}
         <div className="event-card__info p-3 bg-white rounded-bottom">
-          <h3 className="event-card__title fs-small fw-bold mb-2">{date}</h3>
+          <h3 className="event-card__date fs-small text-dark mb-0">{date}</h3>
           {event.description && (
             <p className="event-card__description text-muted fs-small mb-0">
               {event.description}

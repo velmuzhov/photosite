@@ -21,7 +21,7 @@ const Header = () => {
       <div className="container d-flex justify-between align-items-center p-3">
         <div className="header__logo">
           <Link to="/" className="nav-link">
-            Главная
+            Velmuzhov
           </Link>
         </div>
 
@@ -42,7 +42,7 @@ const Header = () => {
               <Link to="/portrait" className="nav-link">Портреты</Link>
             </li>
             <li className="nav-item">
-              <Link to="/family" className="nav-link">Семьи</Link>
+              <Link to="/family" className="nav-link">Семья</Link>
             </li>
             <li className="nav-item">
               <Link to="/about" className="nav-link">Обо мне</Link>
@@ -62,16 +62,18 @@ const Header = () => {
                   </button>
                 </li>
               </>
-            ) : (
-              <li className="nav-item">
-                <Link
-                  to="/login"
-                  className="nav-btn btn btn-sm btn-primary"
-                >
-                  Вход
-                </Link>
-              </li>
-            )}
+            ) : ''
+            // (
+            //   <li className="nav-item">
+            //     <Link
+            //       to="/login"
+            //       className="nav-btn btn btn-sm btn-primary"
+            //     >
+            //       Вход
+            //     </Link>
+            //   </li>
+            // )
+            }
           </ul>
         </nav>
       </div>
