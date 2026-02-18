@@ -7,7 +7,8 @@ import {
 } from 'react-router-dom';
 import Home from './Pages/Home';
 import CategoryPage from './Pages/CategoryPage';
-
+import AdminPage from './Components/Admin/AdminPage';
+import CreateShootForm from './Components/Admin/Forms/CreateShootForm';
 import About from './Pages/About';
 import EventDetail from './Components/EventDetail';
 import Login from './Pages/Login';
@@ -15,8 +16,8 @@ import Header from './Components/Header';
 import './App.css';
 
 const App = () => {
-  // Здесь можно добавить проверку авторизации для админки
-  const isAuthenticated = !!localStorage.getItem('authToken');
+  // Используем правильный ключ из services/api.js
+  const isAuthenticated = !!localStorage.getItem('access_token');
 
   const categories = [
     { path: 'wedding', title: 'Свадьбы' },
@@ -24,13 +25,24 @@ const App = () => {
     { path: 'family', title: 'Семья' },
   ];
 
+  const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('access_token');
+  
+  if (!token) {
+    // Нет токена → на страницу входа
+    return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
+  }
+  
+  // Есть токен → показываем контент
+  return children;
+};
+
   return (
     <Router>
       <Header />
       <div className="app-container">
         <Routes>
           <Route path="/" element={<Home />} />
-          {/* Единый маршрут для всех категорий */}
           {categories.map(({ path, title }) => (
             <Route
               key={path}
@@ -39,23 +51,30 @@ const App = () => {
             />
           ))}
           <Route path="/about" element={<About />} />
-
           <Route path="/events/:category/:date" element={<EventDetail />} />
 
+          {/* Страница входа — только если НЕ авторизован */}
           <Route
             path="/login"
-            element={isAuthenticated ? <Navigate to="/" /> : <Login />}
+            element={isAuthenticated ? <Navigate to="/admin" /> : <Login />}
           />
 
-          {/* Заглушка для админки */}
+          {/* Админка — только для авторизованных */}
           <Route
             path="/admin"
             element={
-              isAuthenticated ? (
-                <div>Админка (пока заглушка)</div>
-              ) : (
-                <Navigate to="/login" />
-              )
+              <PrivateRoute>
+                <AdminPage />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/create-shoot"
+            element={
+              <PrivateRoute>
+                <CreateShootForm />
+              </PrivateRoute>
             }
           />
         </Routes>

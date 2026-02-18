@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const isAuthenticated = !!localStorage.getItem('authToken');
+  const navigate = useNavigate();
 
+  // Проверяем авторизацию по правильному ключу
+  const isAuthenticated = !!localStorage.getItem('access_token');
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
+    // Удаляем токены
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+
+    // Закрываем меню
     setIsMenuOpen(false);
+
+    // Переходим на главную (или страницу входа)
+    navigate('/', { replace: true });
   };
+
+  // Перерендерим заголовок при изменении маршрута
+  useEffect(() => {
+    setIsMenuOpen(false); // Закрываем меню при смене страницы
+  }, [location.pathname]);
 
   return (
     <header className="header fixed-top w-100 bg-white shadow">
@@ -48,7 +61,7 @@ const Header = () => {
               <Link to="/about" className="nav-link">Обо мне</Link>
             </li>
 
-            {isAuthenticated ? (
+            {isAuthenticated && (
               <>
                 <li className="nav-item">
                   <Link to="/admin" className="nav-link text-success">Админка</Link>
@@ -62,18 +75,7 @@ const Header = () => {
                   </button>
                 </li>
               </>
-            ) : ''
-            // (
-            //   <li className="nav-item">
-            //     <Link
-            //       to="/login"
-            //       className="nav-btn btn btn-sm btn-primary"
-            //     >
-            //       Вход
-            //     </Link>
-            //   </li>
-            // )
-            }
+            )}
           </ul>
         </nav>
       </div>

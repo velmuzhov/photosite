@@ -16,8 +16,20 @@ const AuthForm = ({ onLogin }) => {
 
     try {
       const data = await login(username, password);
+      
+      // Явно сохраняем токен и проверяем
       setAuthToken(data.access_token);
-      onLogin && onLogin(data); // Передаём данные в родительский компонент
+      
+      // Убедимся, что токен записан в localStorage
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('Токен не сохранён');
+      }
+
+      // Вызываем родительский обработчик
+      if (onLogin) {
+        onLogin(data);
+      }
     } catch (err) {
       setError('Неверный логин или пароль');
     }
@@ -28,6 +40,7 @@ const AuthForm = ({ onLogin }) => {
     <form onSubmit={handleSubmit} className="auth-form">
       <h2>Вход в админку</h2>
       {error && <p className="error-message">{error}</p>}
+
       
       <div className="form-group">
         <label htmlFor="username">Логин:</label>
@@ -37,6 +50,7 @@ const AuthForm = ({ onLogin }) => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
+          disabled={loading}
         />
       </div>
 
@@ -48,6 +62,7 @@ const AuthForm = ({ onLogin }) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          disabled={loading}
         />
       </div>
 
