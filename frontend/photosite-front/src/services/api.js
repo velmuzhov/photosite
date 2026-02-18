@@ -141,6 +141,8 @@ export const login = async (username, password) => {
   }
 };
 
+
+// Функция для создания новой
 export const createShoot = async (formData) => {
   try {
     // 1. Получаем токен из localStorage
@@ -180,6 +182,44 @@ export const createShoot = async (formData) => {
     throw error.response?.data || error.message;
   }
 };
+
+// Функция для добавления фотографий к существующей съемке
+export const addPicturesToExistingEvent = async (category, date, files) => {
+  try {
+    const token = getAccessToken();
+    if (!token) {
+      throw new Error('Нет токена авторизации');
+    }
+
+    // Обновляем заголовок с актуальным токеном
+    apiFormFileClient.defaults.headers['Authorization'] = `Bearer ${token}`;
+
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    const response = await apiFormFileClient.patch(`/events/${category}/${date}/pictures`, formData);
+    return response.data;
+
+  } catch (error) {
+    if (error.response?.status === 401) {
+      try {
+        console.log('Токен устарел, пытаемся обновить...');
+        const newToken = await refreshToken();
+        apiFormFileClient.defaults.headers['Authorization'] = `Bearer ${newToken}`;
+
+        const retryResponse = await apiFormFileClient.patch(`/events/${category}/${date}/pictures`, formData);
+        return retryResponse.data;
+      } catch (refreshError) {
+        console.error('Не удалось обновить токен:', refreshError);
+        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+      }
+    }
+    throw error.response?.data || error.message;
+  }
+};
+
 
 
 export const checkAuth = async () => {
