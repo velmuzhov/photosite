@@ -16,10 +16,10 @@ const AuthForm = ({ onLogin }) => {
 
     try {
       const data = await login(username, password);
-      
+
       // Явно сохраняем токен и проверяем
       setAuthToken(data.access_token);
-      
+
       // Убедимся, что токен записан в localStorage
       const token = localStorage.getItem('access_token');
       if (!token) {
@@ -41,7 +41,6 @@ const AuthForm = ({ onLogin }) => {
       <h2>Вход в админку</h2>
       {error && <p className="error-message">{error}</p>}
 
-      
       <div className="form-group">
         <label htmlFor="username">Логин:</label>
         <input

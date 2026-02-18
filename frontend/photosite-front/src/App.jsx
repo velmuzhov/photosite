@@ -9,6 +9,7 @@ import Home from './Pages/Home';
 import CategoryPage from './Pages/CategoryPage';
 import AdminPage from './Components/Admin/AdminPage';
 import CreateShootForm from './Components/Admin/Forms/CreateShootForm';
+import AddPicturesForm from './Components/Admin/Forms/AddPicturesForm';
 import About from './Pages/About';
 import EventDetail from './Components/EventDetail';
 import Login from './Pages/Login';
@@ -26,16 +27,22 @@ const App = () => {
   ];
 
   const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('access_token');
-  
-  if (!token) {
-    // Нет токена → на страницу входа
-    return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
-  }
-  
-  // Есть токен → показываем контент
-  return children;
-};
+    const token = localStorage.getItem('access_token');
+
+    if (!token) {
+      // Нет токена → на страницу входа
+      return (
+        <Navigate
+          to="/login"
+          state={{ from: window.location.pathname }}
+          replace
+        />
+      );
+    }
+
+    // Есть токен → показываем контент
+    return children;
+  };
 
   return (
     <Router>
@@ -74,6 +81,14 @@ const App = () => {
             element={
               <PrivateRoute>
                 <CreateShootForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/add-pictures"
+            element={
+              <PrivateRoute>
+                <AddPicturesForm />
               </PrivateRoute>
             }
           />
