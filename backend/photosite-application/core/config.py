@@ -20,7 +20,13 @@ class ApiPrefix(BaseModel):
     v1: ApiV1Prefix = ApiV1Prefix()
 
 class Static(BaseModel):
-    image_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images"
+    image_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "full_size"
+    thumbnails_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "thumbnails"
+    covers_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "event_covers"
+
+    thumbnails_width: int = 640
+    thumbnails_height: int = 800
+    thumbnails_target_ratio: float = 5 / 4
 
 class Auth(BaseModel):
     access_token_expires_minutes: int = 30

@@ -9,9 +9,43 @@ from core.models.picture import Picture
 from core.models.category import Category
 from core.models.event import Event
 from sqlalchemy import select
+from PIL import Image
 
 
 from core.config import settings
+
+
+def resize_and_crop_image(input_path: Path, output_path: Path) -> None:
+    """Функция, создающая и записывающая в файловую систему превью для фотографии.
+    Принимает путь (pathlib.Path) к исходному файлу на диске (уже записанному) и путь файла
+    назначения."""
+    with Image.open(input_path) as img:
+        width, height = img.size
+
+        target_ratio = settings.static.thumbnails_target_ratio
+
+        current_ratio = height / width
+
+        if current_ratio > target_ratio:
+            new_height = int(width * target_ratio)
+            top = (height - new_height) // 2
+            bottom = top + new_height
+            cropped_img = img.crop((0, top, width, bottom))
+        else:
+            new_width = int(height / target_ratio)
+            left = (width - new_width) // 2
+            right = left + new_width
+            cropped_img = img.crop((left, 0, right, height))
+
+        resized_img = cropped_img.resize(
+            (
+                settings.static.thumbnails_width,
+                settings.static.thumbnails_height,
+            ),
+            Image.Resampling.LANCZOS,
+        )
+
+        resized_img.save(output_path, quality=90)
 
 
 def check_file_name(filename: str | None) -> bool:
@@ -76,7 +110,7 @@ async def create_event(
         date=date,
         category_id=category_in_db.id,
         cover=cover,
-        description = description,
+        description=description,
     )
     db.add(new_event)
     await db.commit()
@@ -101,23 +135,25 @@ async def save_file_to_db(
         path=file_rel_path,
         event_id=event.id,
     )
-    
+
     db.add(new_picture)
-    await db.flush() # проверка на уровне базы данных, что категория и дата допустимы
-        
+    await db.flush()  # проверка на уровне базы данных, что категория и дата допустимы
+
 
 async def write_one_file_on_disc(filename: str | Path, file: UploadFile) -> None:
     async with aiofiles.open(filename, "wb") as buffer:
         while chunk := await file.read(8192):
             await buffer.write(chunk)
 
+
 async def save_multiple_files_to_event(
-        db: AsyncSession,
-        event: Event,
-        category: str,
-        date: str,
-        files_to_add: list[UploadFile],
-        dir_for_upload: Path,
+    db: AsyncSession,
+    event: Event,
+    category: str,
+    date: str,
+    files_to_add: list[UploadFile],
+    dir_for_upload: Path,
+    dir_for_thumbnails: Path,
 ) -> list[str]:
     added_files: list[str] = []
 
@@ -129,23 +165,31 @@ async def save_multiple_files_to_event(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Загружаемый файл должен иметь имя",
             )
-        if file.filename in filenames: #type: ignore
+        if file.filename in filenames:  # type: ignore
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Необходимо загружать файлы с уникальными именами",
             )
         filenames.append(file.filename)
-    for file in files_to_add:    
+    for file in files_to_add:
         await save_file_to_db(
             db,
-            file.filename, #type: ignore
+            file.filename,  # type: ignore
             event,
             f"{category}/{date}/{file.filename}",
         )
         added_files.append(str(file.filename))
-        
+
     for file in files_to_add:
-        await write_one_file_on_disc(dir_for_upload / file.filename, file) # type: ignore
+        await write_one_file_on_disc(dir_for_upload / file.filename, file)  # type: ignore
+
+    for item in dir_for_upload.iterdir():
+        if item.is_file():
+            resize_and_crop_image(item, dir_for_thumbnails / item.name)
+
+    
+
+    
 
     try:
         await db.commit()
@@ -158,4 +202,3 @@ async def save_multiple_files_to_event(
         )
 
     return added_files
-

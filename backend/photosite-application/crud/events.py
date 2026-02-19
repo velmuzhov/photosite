@@ -110,12 +110,17 @@ async def delete_event(
     await db.commit()
 
     dir_to_remove = settings.static.image_dir / category / date
+    thumbnail_dir_to_remove = settings.static.thumbnails_dir / category / date
+    print(thumbnail_dir_to_remove)
     dir_with_cover_to_remove = (
-        settings.static.image_dir / "event_covers" / category / date
+        settings.static.covers_dir / category / date
     )
 
     if dir_to_remove.exists() and dir_to_remove.is_dir():
         shutil.rmtree(dir_to_remove)
+
+    if thumbnail_dir_to_remove.exists() and dir_with_cover_to_remove.is_dir():
+        shutil.rmtree(thumbnail_dir_to_remove)
 
     if dir_with_cover_to_remove.exists() and dir_with_cover_to_remove.is_dir():
         shutil.rmtree(dir_with_cover_to_remove)
@@ -205,6 +210,7 @@ async def add_pictures_to_existing_event(
     ]
 
     dir_for_upload = settings.static.image_dir / category / date
+    dir_for_thumbnails = settings.static.thumbnails_dir / category / date
 
     return await save_multiple_files_to_event(
         db=db,
@@ -213,6 +219,7 @@ async def add_pictures_to_existing_event(
         date=date,
         files_to_add=files_to_add,
         dir_for_upload=dir_for_upload,
+        dir_for_thumbnails=dir_for_thumbnails,
     )
 
 

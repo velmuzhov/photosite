@@ -44,16 +44,19 @@ async def upload_pictures(
         )
 
     category_dir = settings.static.image_dir / category
+    thumbnails_category_dir = settings.static.thumbnails_dir / category
     print(category_dir)
     date_dir = category_dir / date
+    thumbnails_date_dir = thumbnails_category_dir / date
     date_dir.mkdir(parents=True, exist_ok=True)
+    thumbnails_date_dir.mkdir(parents=True, exist_ok=True)
 
     # Сохранение изображения с обложкой категории
     event_cover_path = event_cover.filename
-    event_cover_dir = settings.static.image_dir / "event_covers" / category / date
+    event_cover_dir = settings.static.covers_dir / category / date
     event_cover_dir.mkdir(parents=True, exist_ok=True)
     file_path = event_cover_dir / str(event_cover.filename) # для статического анализатора, но None здесь не будет
-    event_cover_path = f"event_covers/{category}/{date}/{event_cover.filename}"
+    event_cover_path = f"{settings.static.covers_dir.name}/{category}/{date}/{event_cover.filename}"
 
     new_event = await create_event(
         db, category, date_obj, event_cover_path, event_description
@@ -67,6 +70,7 @@ async def upload_pictures(
             date=date,
             files_to_add=files,
             dir_for_upload=date_dir,
+            dir_for_thumbnails=thumbnails_date_dir,
         )
     except Exception:
         await db.delete(new_event)
