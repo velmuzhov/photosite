@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
+from fastapi_cache.backends.inmemory import InMemoryBackend
 
 from api import router as api_router
 from logging_config import setup_logging
@@ -26,7 +27,6 @@ async def lifespan(app: FastAPI):
     redis = aioredis.from_url(
         settings.redis.url,
         encoding="utf-8",
-        decode_responses=True,
     )
     print(redis)
     FastAPICache.init(
@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
 main_app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
-    docs_url= "/docs" if settings.environment == "development" else None
+    docs_url="/docs" if settings.environment == "development" else None,
 )
 
 main_app.mount(
@@ -62,7 +62,6 @@ main_app.add_middleware(
     # expose_headers=["x-total-count", "x-fastapi-cache"],
     expose_headers=["*"],
 )
-
 
 
 @main_app.middleware("http")

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const STATIC_BASE_URL = import.meta.env.VITE_STATIC_BASE_URL;
+// const STATIC_BASE_URL = import.meta.env.VITE_STATIC_BASE_URL;
+// const BASE_FULLSIZE_PICTURES_URL = import.meta.env.VITE_BASE_FULLSIZE_PICTURES_URL;
 
 // Получаем токен из localStorage
 const getAccessToken = () => {

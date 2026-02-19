@@ -83,7 +83,7 @@ const CreateShootForm = () => {
         </div>
 
         <div>
-          <label className="fw-bold">Дата (ГГГГ-ММ-ДД)</label>
+          <label className="fw-bold">Дата (ДД-ММ-ГГГГ)</label>
           <input
             type="date"
             name="date"

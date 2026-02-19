@@ -30,7 +30,7 @@ const EventPage = () => {
   // Открытие лайтбокса
   const openLightbox = (imgPath) => {
     setCurrentImageSrc(
-      `${import.meta.env.VITE_STATIC_BASE_URL}/images/${imgPath}`
+      `${import.meta.env.VITE_BASE_FULLSIZE_PICTURES_URL}/${imgPath}`
     );
     setIsLightboxOpen(true);
     document.body.style.overflow = 'hidden';
@@ -111,7 +111,7 @@ const EventPage = () => {
             onClick={() => openLightbox(img.path)}
           >
             <img
-              src={`${import.meta.env.VITE_STATIC_BASE_URL}/images/${img.path}`}
+              src={`${import.meta.env.VITE_BASE_THUMBNAILS_PICTURES_URL}/${img.path}`}
               alt={`Фото ${index + 1}`}
               className="gallery-image"
               loading="lazy"

@@ -20,6 +20,7 @@ class ApiPrefix(BaseModel):
     v1: ApiV1Prefix = ApiV1Prefix()
 
 class Static(BaseModel):
+    base_image_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images"
     image_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "full_size"
     thumbnails_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "thumbnails"
     covers_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "event_covers"
@@ -35,7 +36,7 @@ class Auth(BaseModel):
     algorithm: str = "HS256"
 
 class RedisConfig(BaseModel):
-    url: str = "redis://localhost"
+    url: str = "redis://localhost:6379"
     prefix: str = "fastapi-cache"
 
 class DatabaseConfig(BaseModel):
@@ -57,7 +58,7 @@ class QueryConfig(BaseModel):
     limit: int = 24
 
 class CashConfig(BaseModel):
-    term: int = 10
+    term: int = 300
 
 
 class Settings(BaseSettings):

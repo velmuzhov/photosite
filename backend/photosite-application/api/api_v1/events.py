@@ -1,12 +1,14 @@
 import asyncio
-from typing import Annotated
-from collections.abc import Sequence
+from typing import Annotated, Any
+import hashlib
+from collections.abc import Sequence, Callable
 from fastapi import APIRouter, Depends, Form, Path, Query, UploadFile, File, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_cache.decorator import cache
 from fastapi_cache import FastAPICache
 from redis import asyncio as aioredis
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+from fastapi.requests import Request
 
 
 from core.models import db_helper
@@ -30,8 +32,34 @@ router = APIRouter(
 get_async_db = Annotated[AsyncSession, Depends(db_helper.session_getter)]
 
 
+def events_key_builder(
+    func: Callable[..., Any],
+    namespace: str = "",
+    *,
+    request: Request | None = None,
+    response: Request | None = None,
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> str:
+    """Кастомный создатель ключей в кеше, исключающий из аргументов конечной точки
+    экземпляр асинхронно сессии"""
+    custom_kwargs = {
+        key: value
+        for key, value in kwargs.items()
+        if not isinstance(value, AsyncSession)
+    }
+
+    print(args)
+    print(custom_kwargs)
+
+    cache_key = hashlib.md5(
+        f"{func.__module__}:{func.__name__}:{args}:{custom_kwargs}".encode()
+    ).hexdigest()
+    return f"{namespace}:{cache_key}"
+
+
 @router.get("/{category}/{date}", response_model=EventRead)
-@cache(expire=settings.cache.term)
+@cache(expire=settings.cache.term, key_builder=events_key_builder)  # type: ignore
 async def get_one_event_pictures(
     db: get_async_db,
     category: Annotated[str, Path()],
@@ -40,11 +68,13 @@ async def get_one_event_pictures(
     """
     Функция операции для получения всех фотографий из одной съемки.
     """
+
+    await asyncio.sleep(3)
+
     return await events_crud.get_event_with_pictures(db, category, date)
 
 
 @router.get("/{category}", response_model=list[EventReadNoPictures])
-@cache(expire=settings.cache.term)
 async def get_events_with_category(
     db: get_async_db,
     category: Annotated[str, Path()],

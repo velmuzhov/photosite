@@ -277,7 +277,7 @@ async def edit_event_base_data(
 
     # замена пути к обложке
     event_cover_file_name = event.cover.split("/")[-1]
-    event.cover = f"event_covers/{cat_to_db}/{date_to_db}/{event_cover_file_name}"
+    event.cover = f"{settings.static.covers_dir.name}/{cat_to_db}/{date_to_db}/{event_cover_file_name}"
 
     await db.commit()
     await db.refresh(event)
@@ -285,15 +285,19 @@ async def edit_event_base_data(
     # создание новых директорий для фотографий и обложки, если они не существуют
     old_pictures_dir = settings.static.image_dir / category / date
     new_pictures_dir = settings.static.image_dir / cat_to_db / date_to_db
-    old_cover_dir = settings.static.image_dir / "event_covers" / category / date
-    new_cover_dir = settings.static.image_dir / "event_covers" / cat_to_db / date_to_db
+    old_cover_dir = settings.static.covers_dir / category / date
+    new_cover_dir = settings.static.covers_dir / cat_to_db / date_to_db
+    old_thumbnail_dir = settings.static.thumbnails_dir / category / date
+    new_thumbnail_dir = settings.static.thumbnails_dir / cat_to_db / date_to_db
 
     # обновление путей к фотографиям в базе данных
     for picture in event.pictures:
         picture.path = str(new_pictures_dir / picture.name)
 
     move_files(old_pictures_dir, new_pictures_dir)  # перенос фотографий
+    move_files(old_thumbnail_dir, new_thumbnail_dir) # перенос превью
     move_files(old_cover_dir, new_cover_dir)  # перенос обложки
+    
 
     return event
 
@@ -330,23 +334,22 @@ async def edit_event_cover(
         )
 
     # создание директории для обложки, если она не существует (для перестраховки, она должна была быть создана при загрузке обложки при создании съемки)
-    dir_for_cover = settings.static.image_dir / "event_covers" / category / date
+    dir_for_cover = settings.static.covers_dir / category / date
     dir_for_cover.mkdir(parents=True, exist_ok=True)
 
     # удаление старой обложки с диска
-    old_cover_path = settings.static.image_dir / event.cover
+    old_cover_path = settings.static.base_image_dir / event.cover
     if old_cover_path.exists():
         old_cover_path.unlink()
 
     # сохранение нового пути к обложке в базе данных
     new_cover_path = (
-        settings.static.image_dir
-        / "event_covers"
+        settings.static.covers_dir
         / category
         / date
         / str(new_cover.filename)
     )
-    event.cover = str(new_cover_path.relative_to(settings.static.image_dir))
+    event.cover = str(new_cover_path.relative_to(settings.static.base_image_dir))
 
     await db.commit()
     await db.refresh(event)
