@@ -58,7 +58,8 @@ class QueryConfig(BaseModel):
     limit: int = 24
 
 class CashConfig(BaseModel):
-    term: int = 300
+    term: int = 60 * 60 * 24 * 7
+    max_age_maximum: int = 60
 
 
 class Settings(BaseSettings):

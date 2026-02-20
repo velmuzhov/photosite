@@ -27,9 +27,9 @@ const CategoryPage = ({ category, title }) => {
         const response = await getEventsByCategory(category, page);
 
         // Извлекаем данные и общее количество
-        setEvents(response.data);
-        const total = response.headers['x-total-count'];
-        console.log(response.headers['x-total-count']);
+        setEvents(response.data.events);
+        const total = response.data.total_count;
+        console.log(response.data.total_count);
         setTotalCount(Number(total) || 0);
       } catch (error) {
         console.error(`Не удалось загрузить ${title}:`, error);

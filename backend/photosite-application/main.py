@@ -93,6 +93,20 @@ async def log_requests(request: Request, call_next: Callable) -> Response:
         logger.exception(f"Error processing request: {str(e)}")
         raise
 
+@main_app.middleware("http")
+async def headers_control(request: Request, call_next: Callable) -> Response:
+    """Ограничивает max_age в cache_control 5 минутами, если это значение больше"""
+    print("Request Headers:")
+    print(request.headers)
+    
+    response: Response = await call_next(request)
+    if "max-age" in (cache_control_header := response.headers.get("Cache-Control", "Empty")):
+        if int(cache_control_header.split("=")[-1]) > settings.cache.max_age_maximum:
+            response.headers["Cache-Control"] = f"max-age={settings.cache.max_age_maximum}"
+    
+    print(response.headers)
+    return response
+
 
 main_app.include_router(
     router=api_router,

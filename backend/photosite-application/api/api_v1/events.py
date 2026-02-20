@@ -68,38 +68,36 @@ async def get_one_event_pictures(
     """
     Функция операции для получения всех фотографий из одной съемки.
     """
-
-    await asyncio.sleep(3)
-
     return await events_crud.get_event_with_pictures(db, category, date)
 
 
-@router.get("/{category}", response_model=list[EventReadNoPictures])
+@router.get("/{category}")
+@cache(expire=settings.cache.term, key_builder=events_key_builder)  # type: ignore
 async def get_events_with_category(
     db: get_async_db,
     category: Annotated[str, Path()],
     response: Response,
     limit: Annotated[int, Query()] = settings.querysettings.limit,
     page: Annotated[int, Query()] = 1,
-):
+) -> dict[str, int | Sequence[Event]]:
     """
     Функция операции для получения всех съемок из данной категории
-    в обратном хронологическом порядке.
+    в обратном хронологическом порядке. Возвращает словарь с полным
+    количеством записей для пагинации и последовательностью из
+    экземпляров orm-модели Event.
     """
 
-    # тестирую спиннер в Реакте
-    # await asyncio.sleep(2)
-
-    total_count, result = await events_crud.get_events_by_category(
+    total_count, events = await events_crud.get_events_by_category(
         db,
         category,
         limit=limit,
         page=page,
     )
 
-    response.headers["X-Total-Count"] = str(total_count)
-
-    return result
+    return {
+        "total_count": total_count,
+        "events": events,
+    }
 
 
 @router.patch("/{category}/{date}", response_model=EventReadNoPictures)
