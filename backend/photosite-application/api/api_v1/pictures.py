@@ -1,6 +1,5 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
-from fastapi_cache.decorator import cache
 from fastapi_cache import FastAPICache
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import settings
@@ -22,7 +21,6 @@ get_async_db = Annotated[AsyncSession, Depends(db_helper.session_getter)]
 
 
 @router.get("/", response_model=list[PictureRead])
-# @cache(expire=60 * 60 * 3)
 async def get_all_pictures_sorted_by_id(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
@@ -58,6 +56,7 @@ async def delete_pictures_operation(
     db: get_async_db,
     pictures: list[str],
 ) -> dict[str, str]:
+    await FastAPICache.clear()
     try:
         await pictures_crud.delete_pictures(db, pictures)
         return {"message": f"Изображения удалены"}

@@ -1,0 +1,123 @@
+.delete-checkbox {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 28px;
+  height: 28px;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid #007bff;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.delete-checkbox:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+.delete-checkbox::before {
+  content: '';
+  display: none;
+  width: 14px;
+  height: 7px;
+  border: solid #007bff;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+  margin: auto;
+}
+
+.delete-checkbox:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.delete-checkbox:checked::before {
+  display: block;
+  border-color: white;
+}
+
+.delete-checkbox:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+}
+
+/* Дополнительно улучшаем видимость при фокусе на клавиатуре */
+.delete-checkbox:focus-visible {
+  outline: 3px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Стили для галереи (остаются без изменений, но привожу для полноты) */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.3rem;
+  margin: 1.5rem 0;
+  width: 100%;
+  padding: 0 1rem;
+  justify-items: center;
+}
+
+.gallery-item.ratio-5-4 {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  width: 100%;
+  padding-top: 125%; /* 5:4 = 125% */
+}
+
+.gallery-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover .gallery-image {
+  transform: scale(1.05);
+}
+
+/* Адаптивные правила */
+@media (max-width: 575px) {
+  .gallery-grid {
+    grid-template-columns: 1fr;
+    padding: 0 0.5rem;
+    gap: 0.25rem;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .gallery-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    padding: 0 2rem;
+  }
+}

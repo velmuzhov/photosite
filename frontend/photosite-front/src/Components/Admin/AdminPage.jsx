@@ -21,6 +21,14 @@ const AdminPage = () => {
         >
           Добавить фотографии к съёмке
         </Link>
+
+        {/* Новая ссылка для удаления фотографий */}
+        <Link
+          to="/admin/delete-pictures"
+          className="btn bg-danger text-light rounded"
+        >
+          Удалить фотографии из съёмки
+        </Link>
       </div>
     </div>
   );

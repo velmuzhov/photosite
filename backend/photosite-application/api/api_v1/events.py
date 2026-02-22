@@ -99,6 +99,17 @@ async def get_events_with_category(
         "events": events,
     }
 
+@router.get("/{category}/{date}/admin", response_model=EventRead)
+async def get_one_event_pictures_for_admin(
+    user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+    category: Annotated[str, Path()],
+    date: Annotated[str, Path()],
+):
+    """
+    Функция операции для получения всех фотографий из одной съемки.
+    """
+    return await events_crud.get_event_with_pictures(db, category, date)
 
 @router.patch("/{category}/{date}", response_model=EventReadNoPictures)
 async def edit_event(

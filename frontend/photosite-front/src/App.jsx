@@ -10,6 +10,8 @@ import CategoryPage from './Pages/CategoryPage';
 import AdminPage from './Components/Admin/AdminPage';
 import CreateShootForm from './Components/Admin/Forms/CreateShootForm';
 import AddPicturesForm from './Components/Admin/Forms/AddPicturesForm';
+import DeletePicturesForm from './Components/Admin/Forms/DeletePicturesForm';
+import AdminManagePictures from './Components/Admin/AdminManagePictures';
 import About from './Pages/About';
 import EventDetail from './Components/EventDetail';
 import Login from './Pages/Login';
@@ -89,6 +91,23 @@ const App = () => {
             element={
               <PrivateRoute>
                 <AddPicturesForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/delete-pictures"
+            element={
+              <PrivateRoute>
+                <DeletePicturesForm />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/manage-pictures/:category/:date"
+            element={
+              <PrivateRoute>
+                <AdminManagePictures />
               </PrivateRoute>
             }
           />

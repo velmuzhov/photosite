@@ -89,7 +89,10 @@ async def delete_pictures(
     """Удаляет в рамках транзакции выбранные фотографии
     из базы данных по их путям.
     При успешном удалении из базы данных удаляются файлы
-    на диске."""
+    на диске.
+    Удаление всех фотографий не приводит к удалению съемки, к которой
+    они относятся. Она остается доступной для добавления фотографий.
+    """
 
     if len(picture_paths) == 0:
         raise HTTPException(
@@ -109,8 +112,10 @@ async def delete_pictures(
     await db.commit()
     for picture_path in picture_paths:
         file_path = settings.static.image_dir / picture_path
+        thumbnail_path = settings.static.thumbnails_dir / picture_path
         try:
             file_path.unlink(missing_ok=True)
+            thumbnail_path.unlink(missing_ok=True)
         except Exception as e:
             # залогировать
             print(f"Ошибка при удалении {file_path}: {e}")

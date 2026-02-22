@@ -1,8 +1,6 @@
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-// const STATIC_BASE_URL = import.meta.env.VITE_STATIC_BASE_URL;
-// const BASE_FULLSIZE_PICTURES_URL = import.meta.env.VITE_BASE_FULLSIZE_PICTURES_URL;
 
 // Получаем токен из localStorage
 const getAccessToken = () => {
@@ -41,6 +39,71 @@ const apiFormFileClient = axios.create({
   },
 });
 
+// Флаг для предотвращения параллельных обновлений токена
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Интерцептор запросов — добавляем токен перед каждым запросом
+apiAuthClient.interceptors.request.use(
+  (config) => {
+    const token = getAccessToken();
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Интерцептор ответов — централизованная обработка 401
+apiAuthClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // Если обновление уже идёт, добавляем запрос в очередь
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers['Authorization'] = `Bearer ${token}`;
+          return apiAuthClient(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const newToken = await refreshToken();
+        processQueue(null, newToken);
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+        return apiAuthClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError);
+        setAuthToken(null);
+        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Установка/удаление токена
 export const setAuthToken = (token) => {
   if (token) {
@@ -65,7 +128,10 @@ export const refreshToken = async () => {
     });
 
     const newAccessToken = response.data.access_token;
+    const newRefreshToken = response.data.refresh_token; // Исправлено: было response.date
+
     localStorage.setItem('access_token', newAccessToken);
+    localStorage.setItem('refresh_token', newRefreshToken);
     setAuthToken(newAccessToken);
 
     return newAccessToken;
@@ -142,59 +208,19 @@ export const login = async (username, password) => {
   }
 };
 
-
-// Функция для создания новой
+// Функция для создания новой съёмки
 export const createShoot = async (formData) => {
   try {
-    // 1. Получаем токен из localStorage
-    const token = getAccessToken();
-    
-    if (!token) {
-      throw new Error('Нет токена авторизации');
-    }
-
-    // 2. Явно обновляем заголовки клиента (на случай, если токен изменился)
-    apiFormFileClient.defaults.headers['Authorization'] = `Bearer ${token}`;
-
-    // 3. Отправляем запрос
     const response = await apiFormFileClient.post('/pictures/', formData);
-    
     return response.data;
-
   } catch (error) {
-    // 4. Если ошибка 401 — токен устарел, пробуем обновить
-    if (error.response?.status === 401) {
-      try {
-        console.log('Токен устарел, пытаемся обновить...');
-        const newToken = await refreshToken(); // Обновляем токен
-        
-        // 5. Повторяем запрос с новым токеном
-        apiFormFileClient.defaults.headers['Authorization'] = `Bearer ${newToken}`;
-        
-        const retryResponse = await apiFormFileClient.post('/pictures/', formData);
-        return retryResponse.data;
-      } catch (refreshError) {
-        console.error('Не удалось обновить токен:', refreshError);
-        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
-      }
-    }
-
-    // 6. Другие ошибки
     throw error.response?.data || error.message;
   }
 };
 
-// Функция для добавления фотографий к существующей съемке
+// Функция для добавления фотографий к существующей съёмке
 export const addPicturesToExistingEvent = async (category, date, files) => {
   try {
-    const token = getAccessToken();
-    if (!token) {
-      throw new Error('Нет токена авторизации');
-    }
-
-    // Обновляем заголовок с актуальным токеном
-    apiFormFileClient.defaults.headers['Authorization'] = `Bearer ${token}`;
-
     const formData = new FormData();
     files.forEach(file => {
       formData.append('files', file);
@@ -202,26 +228,10 @@ export const addPicturesToExistingEvent = async (category, date, files) => {
 
     const response = await apiFormFileClient.patch(`/events/${category}/${date}/pictures`, formData);
     return response.data;
-
   } catch (error) {
-    if (error.response?.status === 401) {
-      try {
-        console.log('Токен устарел, пытаемся обновить...');
-        const newToken = await refreshToken();
-        apiFormFileClient.defaults.headers['Authorization'] = `Bearer ${newToken}`;
-
-        const retryResponse = await apiFormFileClient.patch(`/events/${category}/${date}/pictures`, formData);
-        return retryResponse.data;
-      } catch (refreshError) {
-        console.error('Не удалось обновить токен:', refreshError);
-        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
-      }
-    }
     throw error.response?.data || error.message;
   }
 };
-
-
 
 export const checkAuth = async () => {
   try {
@@ -233,5 +243,29 @@ export const checkAuth = async () => {
     return true;
   } catch (error) {
     return false;
+  }
+};
+
+// Получаем фотографии съёмки для админки (с админскими данными)
+export const getEventPicturesForAdmin = async (category, date) => {
+  try {
+    const response = await apiAuthClient.get(`/events/${category}/${date}/admin`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка загрузки фотографий для админки:', error);
+    throw error.response?.data || error.message;
+  }
+};
+
+// Удаляем выбранные фотографии
+export const deletePictures = async (picturePaths) => {
+  try {
+    const response = await apiAuthClient.delete('/pictures', {
+      data: picturePaths,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка удаления фотографий:', error);
+    throw error.response?.data || error.message;
   }
 };
