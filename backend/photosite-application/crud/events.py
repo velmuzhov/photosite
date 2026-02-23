@@ -112,9 +112,7 @@ async def delete_event(
     dir_to_remove = settings.static.image_dir / category / date
     thumbnail_dir_to_remove = settings.static.thumbnails_dir / category / date
     print(thumbnail_dir_to_remove)
-    dir_with_cover_to_remove = (
-        settings.static.covers_dir / category / date
-    )
+    dir_with_cover_to_remove = settings.static.covers_dir / category / date
 
     if dir_to_remove.exists() and dir_to_remove.is_dir():
         shutil.rmtree(dir_to_remove)
@@ -137,17 +135,13 @@ async def get_events_by_category(
     относящихся к данной категории
     от наиболее новых к самым старым."""
     event_count_stmt = (
-        select(func.count(Event.id))
-        .join(Category)
-        .filter(Category.name == category)
+        select(func.count(Event.id)).join(Category).filter(Category.name == category)
     )
 
     if is_active:
         event_count_stmt.filter(Event.active.is_(True))
 
     total_events: int = await db.scalar(event_count_stmt) or 0
-
-    
 
     stmt = (
         select(Event)
@@ -174,7 +168,12 @@ async def get_events_by_date_created(
     Возвращает последовательность съемок
     от последних созданных к первым созданным.
     """
-    stmt = select(Event).order_by(Event.created.desc()).limit(limit).offset(limit * (page - 1))
+    stmt = (
+        select(Event)
+        .order_by(Event.created.desc())
+        .limit(limit)
+        .offset(limit * (page - 1))
+    )
     result = await db.scalars(stmt)
 
     return result.all()
@@ -196,10 +195,12 @@ async def add_pictures_to_existing_event(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Неверные имена или расширения файлов",
         )
-    if len(files) != len([file.filename for file in files if file.filename is not None]):
+    if len(files) != len(
+        [file.filename for file in files if file.filename is not None]
+    ):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Необходимо добавлять файлы с уникальными именами"
+            detail="Необходимо добавлять файлы с уникальными именами",
         )
 
     existing_files = await db.scalars(select(Picture).filter(Picture.event == event))
@@ -295,9 +296,8 @@ async def edit_event_base_data(
         picture.path = str(new_pictures_dir / picture.name)
 
     move_files(old_pictures_dir, new_pictures_dir)  # перенос фотографий
-    move_files(old_thumbnail_dir, new_thumbnail_dir) # перенос превью
+    move_files(old_thumbnail_dir, new_thumbnail_dir)  # перенос превью
     move_files(old_cover_dir, new_cover_dir)  # перенос обложки
-    
 
     return event
 
@@ -344,10 +344,7 @@ async def edit_event_cover(
 
     # сохранение нового пути к обложке в базе данных
     new_cover_path = (
-        settings.static.covers_dir
-        / category
-        / date
-        / str(new_cover.filename)
+        settings.static.covers_dir / category / date / str(new_cover.filename)
     )
     event.cover = str(new_cover_path.relative_to(settings.static.base_image_dir))
 
@@ -388,3 +385,12 @@ async def delete_event_description(
     await db.refresh(event)
 
     return event
+
+
+async def get_inactive_events(
+    db: AsyncSession,
+) -> Sequence[Event]:
+    """Возвращает список неактивных съемок из всех категорий"""
+    result = await db.scalars(select(Event).options(selectinload(Event.category)).filter(Event.active.is_(False)))
+    # print([e.category for e in result.all()])
+    return result.all()

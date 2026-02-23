@@ -1,6 +1,8 @@
 from datetime import datetime, date as dt_date
 from pydantic import BaseModel, Field, field_validator
 from core.schemas.picture import PictureRead
+from core.schemas.category import CategoryEventRead
+
 
 
 class DescriptionValidatorMixin:
@@ -31,6 +33,8 @@ class EventReadNoPictures(BaseEvent):
 
     id: int
 
+class EventReadWithCategoryName(EventReadNoPictures):
+    category: CategoryEventRead
 
 class EventRead(BaseEvent):
     """

@@ -50,6 +50,18 @@ const AdminPage = () => {
         >
           Удалить съёмку
         </Link>
+        <Link
+          to="/admin/toggle-activity"
+          className="btn bg-info text-light rounded"
+        >
+          Изменить активность съёмки
+        </Link>
+        <Link
+          to="/admin/inactive-events"
+          className="btn bg-info text-light rounded"
+        >
+          Показать неактивные съёмки
+        </Link>
       </div>
     </div>
   );

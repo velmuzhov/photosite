@@ -17,7 +17,7 @@ from core.models.picture import Picture
 from core.models.user import User
 from core.config import settings
 from core.schemas.picture import PictureRead
-from core.schemas.event import EventRead, EventReadNoPictures, EventDescriptionUpdate
+from core.schemas.event import EventRead, EventReadNoPictures, EventDescriptionUpdate, EventReadWithCategoryName
 from crud import events as events_crud
 
 from utils.authorization import get_current_user
@@ -57,6 +57,15 @@ def events_key_builder(
     ).hexdigest()
     return f"{namespace}:{cache_key}"
 
+
+@router.get("/inactive", response_model=list[EventReadWithCategoryName])
+async def get_all_inactive_events(
+    user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+):
+    """Возвращает администратору список неактивных съемок. Должен использоваться
+    на фронтенде для включения активности"""
+    return await events_crud.get_inactive_events(db)
 
 @router.get("/{category}/{date}", response_model=EventRead)
 @cache(expire=settings.cache.term, key_builder=events_key_builder)  # type: ignore
@@ -99,6 +108,7 @@ async def get_events_with_category(
         "events": events,
     }
 
+
 @router.get("/{category}/{date}/admin", response_model=EventRead)
 async def get_one_event_pictures_for_admin(
     user: Annotated[User, Depends(get_current_user)],
@@ -111,6 +121,7 @@ async def get_one_event_pictures_for_admin(
     """
     return await events_crud.get_event_with_pictures(db, category, date)
 
+
 @router.get("/{category}/{date}/admin_no_pictures", response_model=EventRead)
 async def get_one_event_no_pictures_for_admin(
     user: Annotated[User, Depends(get_current_user)],
@@ -122,6 +133,7 @@ async def get_one_event_no_pictures_for_admin(
     Функция операции для получения информации о съемке для админки.
     """
     return await events_crud.get_event_with_pictures(db, category, date)
+
 
 @router.patch("/{category}/{date}", response_model=EventReadNoPictures)
 async def edit_event(
@@ -207,11 +219,8 @@ async def change_active_status_of_event(
     Операция не является идемпотентной (toggle).
     На этот маршрут должен отправляться запрос на фронтенде при нажатии
     кнопки."""
-    # print(await FastAPICache.get_backend().redis.keys())
 
     await FastAPICache.clear()
-
-    # print(await FastAPICache.get_backend().redis.keys())
 
     return await events_crud.toggle_event_active_status(db, category, date)
 
@@ -240,6 +249,7 @@ async def get_all_events(
 ):
     """Возвращает limit последних созданных съемок"""
     return await events_crud.get_events_by_date_created(db, limit)
+
 
 
 @router.delete("/{category}/{date}/description", response_model=EventReadNoPictures)

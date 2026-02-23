@@ -367,3 +367,24 @@ export const deleteEvent = async (category, date) => {
   }
 };
 
+// Изменение статуса активности съёмки
+export const toggleEventActivity = async (category, date) => {
+  try {
+    const response = await apiAuthClient.patch(`/events/${category}/${date}/active`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка изменения статуса активности съёмки:', error);
+    throw error.response?.data || error.message;
+  }
+};
+
+// Получение списка неактивных съёмок
+export const getInactiveEvents = async () => {
+  try {
+    const response = await apiAuthClient.get('/events/inactive');
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка загрузки неактивных съёмок:', error);
+    throw error.response?.data || error.message;
+  }
+};
