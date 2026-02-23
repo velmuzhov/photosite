@@ -14,7 +14,7 @@ const BaseForm = ({ title, children, onSubmit, cancelPath }) => {
             type="submit"
             className="btn bg-success text-light rounded"
           >
-            Сохранить
+            Выполнить
           </button>
           
           <Link

@@ -22,12 +22,33 @@ const AdminPage = () => {
           Добавить фотографии к съёмке
         </Link>
 
-        {/* Новая ссылка для удаления фотографий */}
         <Link
           to="/admin/delete-pictures"
           className="btn bg-danger text-light rounded"
         >
           Удалить фотографии из съёмки
+        </Link>
+
+        <Link
+          to="/admin/update-description"
+          className="btn bg-warning text-dark rounded"
+        >
+          Обновить описание съёмки
+        </Link>
+
+        <Link
+          to="/admin/delete-description"
+          className="btn bg-dark text-light rounded"
+        >
+          Удалить описание съёмки
+        </Link>
+
+        {/* Новая ссылка для удаления съёмки */}
+        <Link
+          to="/admin/delete-event"
+          className="btn bg-danger text-light rounded"
+        >
+          Удалить съёмку
         </Link>
       </div>
     </div>

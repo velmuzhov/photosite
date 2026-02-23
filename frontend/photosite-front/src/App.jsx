@@ -12,6 +12,10 @@ import CreateShootForm from './Components/Admin/Forms/CreateShootForm';
 import AddPicturesForm from './Components/Admin/Forms/AddPicturesForm';
 import DeletePicturesForm from './Components/Admin/Forms/DeletePicturesForm';
 import AdminManagePictures from './Components/Admin/AdminManagePictures';
+import UpdateDescriptionForm from './Components/Admin/Forms/UpdateDescriptionForm';
+import AdminUpdateDescription from './Components/Admin/AdminUpdateDescription';
+import DeleteDescriptionForm from './Components/Admin/Forms/DeleteDescriptionForm';
+import DeleteEventForm from './Components/Admin/Forms/DeleteEventForm';
 import About from './Pages/About';
 import EventDetail from './Components/EventDetail';
 import Login from './Pages/Login';
@@ -108,6 +112,39 @@ const App = () => {
             element={
               <PrivateRoute>
                 <AdminManagePictures />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/update-description"
+            element={
+              <PrivateRoute>
+                <UpdateDescriptionForm />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/update-description/:category/:date"
+            element={
+              <PrivateRoute>
+                <AdminUpdateDescription />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/delete-description"
+            element={
+              <PrivateRoute>
+                <DeleteDescriptionForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/delete-event"
+            element={
+              <PrivateRoute>
+                <DeleteEventForm />
               </PrivateRoute>
             }
           />

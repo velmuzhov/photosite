@@ -16,19 +16,19 @@ async def get_user_by_username(
     return user
 
 
-async def create_user_with_username_and_password(
-    db: AsyncSession,
-    user: UserCreate,
-) -> User:
-    existing_user = await get_user_by_username(db, user.username)
-    if existing_user:
-        raise username_already_exists
-    db_user = User(
-        username=user.username,
-        hashed_password=hash_password(user.password.get_secret_value()),
-    )
-    db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
+# async def create_user_with_username_and_password(
+#     db: AsyncSession,
+#     user: UserCreate,
+# ) -> User:
+#     existing_user = await get_user_by_username(db, user.username)
+#     if existing_user:
+#         raise username_already_exists
+#     db_user = User(
+#         username=user.username,
+#         hashed_password=hash_password(user.password.get_secret_value()),
+#     )
+#     db.add(db_user)
+#     await db.commit()
+#     await db.refresh(db_user)
 
-    return db_user
+#     return db_user

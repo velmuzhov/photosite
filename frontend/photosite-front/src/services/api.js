@@ -104,6 +104,56 @@ apiAuthClient.interceptors.response.use(
   }
 );
 
+// Интерцептор запросов — добавляем токен перед каждым запросом
+apiFormClient.interceptors.request.use(
+  (config) => {
+    const token = getAccessToken();
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Интерцептор ответов — централизованная обработка 401
+apiFormClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // Если обновление уже идёт, добавляем запрос в очередь
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers['Authorization'] = `Bearer ${token}`;
+          return apiAuthClient(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const newToken = await refreshToken();
+        processQueue(null, newToken);
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+        return apiAuthClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError);
+        setAuthToken(null);
+        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Установка/удаление токена
 export const setAuthToken = (token) => {
   if (token) {
@@ -123,12 +173,12 @@ export const refreshToken = async () => {
   if (!refreshToken) throw new Error('Refresh token not found');
 
   try {
-    const response = await apiClient.post('/token/refresh', {
+    const response = await apiClient.post('/users/token/refresh', {
       refresh_token: refreshToken,
     });
 
     const newAccessToken = response.data.access_token;
-    const newRefreshToken = response.data.refresh_token; // Исправлено: было response.date
+    const newRefreshToken = response.data.refresh_token
 
     localStorage.setItem('access_token', newAccessToken);
     localStorage.setItem('refresh_token', newRefreshToken);
@@ -269,3 +319,51 @@ export const deletePictures = async (picturePaths) => {
     throw error.response?.data || error.message;
   }
 };
+
+// Получение данных съемки в админке без фотографий
+export const getEventDetailAdmin = async (category, date) => {
+  try {
+    const response = await apiAuthClient.get(`/events/${category}/${date}/admin_no_pictures`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка загрузки информации о съёмки:', error);
+    throw error;
+  }
+};
+
+// Обновление описания съёмки
+export const updateEventDescription = async (category, date, description) => {
+  try {
+    const formData = new FormData();
+    formData.append('description', description);
+
+    const response = await apiFormClient.patch(`/events/${category}/${date}/description`, formData);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка обновления описания съёмки:', error);
+    throw error.response?.data || error.message;
+  }
+};
+
+// Удаление описания съёмки
+export const deleteEventDescription = async (category, date) => {
+  try {
+    const response = await apiAuthClient.delete(`/events/${category}/${date}/description`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка удаления описания съёмки:', error);
+    throw error.response?.data || error.message;
+  }
+};
+
+// Удаление съёмки
+export const deleteEvent = async (category, date) => {
+  try {
+    const response = await apiAuthClient.delete(`/events/${category}/${date}`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка удаления съёмки:', error);
+    throw error.response?.data || error.message;
+  }
+};
+

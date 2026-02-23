@@ -107,7 +107,19 @@ async def get_one_event_pictures_for_admin(
     date: Annotated[str, Path()],
 ):
     """
-    Функция операции для получения всех фотографий из одной съемки.
+    Функция операции для получения всех фотографий из одной съемки для админки.
+    """
+    return await events_crud.get_event_with_pictures(db, category, date)
+
+@router.get("/{category}/{date}/admin_no_pictures", response_model=EventRead)
+async def get_one_event_no_pictures_for_admin(
+    user: Annotated[User, Depends(get_current_user)],
+    db: get_async_db,
+    category: Annotated[str, Path()],
+    date: Annotated[str, Path()],
+):
+    """
+    Функция операции для получения информации о съемке для админки.
     """
     return await events_crud.get_event_with_pictures(db, category, date)
 
@@ -211,8 +223,7 @@ async def delete_event_operation(
     category: Annotated[str, Path()],
     date: Annotated[str, Path()],
 ) -> dict[str, str]:
-    """Конечная точка для удаления съемки. Категория и дата
-    поступают не через форму, а как параметры пути. На этот маршрут
+    """Конечная точка для удаления съемки. На этот маршрут
     должен отправляться запрос на фронтенде при нажатии кнопки."""
     await FastAPICache.clear()
 
