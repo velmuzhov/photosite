@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, Body, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -73,18 +73,16 @@ async def login(
 @router.post("/token/refresh")
 async def refresh_access_token(
     db: get_async_db,
-    refresh_token: Annotated[str, Header(alias="Authorization")],
+    authorization: Annotated[str | None, Header()] = None,
 ):
-    """
-    Конечная точка для обновления access- и refresh-токенов.
-    Принимает refresh-токен в заголовке Authorization: Bearer <token>
-    Возвращает новые access_token и refresh_token.
-    """
-    # Убираем префикс "Bearer " из заголовка
-    if refresh_token.startswith("Bearer "):
-        refresh_token = refresh_token[7:]
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=400,
+            detail="Authorization header with Bearer token required"
+        )
 
-    user = await get_current_user(refresh_token, db)
+    authorization = authorization[7:]  # убираем "Bearer "
+    user = await get_current_user(authorization, db)
 
     access_token = create_access_token(
         data={

@@ -209,10 +209,12 @@ export const setAuthToken = (token) => {
   if (token) {
     apiAuthClient.defaults.headers['Authorization'] = `Bearer ${token}`;
     apiFormFileClient.defaults.headers['Authorization'] = `Bearer ${token}`;
+    apiFormClient.defaults.headers['Authorization'] = `Bearer ${token}`;
     localStorage.setItem('access_token', token);
   } else {
     delete apiAuthClient.defaults.headers['Authorization'];
     delete apiFormFileClient.defaults.headers['Authorization'];
+    delete apiFormClient.defaults.headers['Authorization'];
     localStorage.removeItem('access_token');
   }
 };
@@ -223,25 +225,34 @@ export const refreshToken = async () => {
   if (!refreshToken) throw new Error('Refresh token not found');
 
   try {
-    const response = await apiClient.post('/users/token/refresh', {
-      refresh_token: refreshToken,
+    // Отправляем refresh‑токен в заголовке Authorization
+    const response = await apiClient.post('/users/token/refresh', {}, {
+      headers: {
+        'Authorization': `Bearer ${refreshToken}`,
+        'Content-Type': 'application/json',
+      },
     });
 
-    const newAccessToken = response.data.access_token;
-    const newRefreshToken = response.data.refresh_token
+    const { access_token, refresh_token } = response.data;
 
-    localStorage.setItem('access_token', newAccessToken);
-    localStorage.setItem('refresh_token', newRefreshToken);
-    setAuthToken(newAccessToken);
+    if (!access_token || !refresh_token) {
+      throw new Error('Server did not return tokens');
+    }
 
-    return newAccessToken;
+    localStorage.setItem('access_token', access_token);
+    localStorage.setItem('refresh_token', refresh_token);
+    setAuthToken(access_token);
+
+    return access_token;
   } catch (error) {
+    console.error('Token refresh failed:', error);
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setAuthToken(null);
     throw error;
   }
 };
+
 
 // === API-МЕТОДЫ ===
 

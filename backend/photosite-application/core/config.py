@@ -30,8 +30,8 @@ class Static(BaseModel):
     thumbnails_target_ratio: float = 5 / 4
 
 class Auth(BaseModel):
-    access_token_expires_minutes: int = 30
-    refresh_token_expire_days: int = 30
+    access_token_expires_minutes: int = 1
+    refresh_token_expire_days: int = 3
     secret_key: str = "my_secret_key"
     algorithm: str = "HS256"
 
