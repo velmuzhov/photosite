@@ -1,6 +1,7 @@
 // Components/Admin/AdminPage.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { clearCache } from '../../services/api';
 
 const AdminPage = () => {
   return (
@@ -62,6 +63,33 @@ const AdminPage = () => {
         >
           Показать неактивные съёмки
         </Link>
+        <Link
+          to="/admin/update-category-date"
+          className="btn bg-warning text-dark rounded"
+        >
+          Обновить категорию и дату съёмки
+        </Link>
+        <Link
+          to="/admin/update-cover"
+          className="btn bg-success text-light rounded"
+        >
+          Обновить обложку съёмки
+        </Link>
+        <button
+          onClick={async () => {
+            try {
+              await clearCache();
+              alert('Кеш успешно очищен!');
+            } catch (err) {
+              alert(
+                `Ошибка при очистке кеша: ${err.message || 'Неизвестная ошибка'}`,
+              );
+            }
+          }}
+          className="btn bg-danger text-light rounded"
+        >
+          Очистить кеш
+        </button>
       </div>
     </div>
   );

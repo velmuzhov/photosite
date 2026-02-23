@@ -1,4 +1,3 @@
-import asyncio
 from typing import Annotated, Any
 import hashlib
 from collections.abc import Sequence, Callable
@@ -6,17 +5,14 @@ from fastapi import APIRouter, Depends, Form, Path, Query, UploadFile, File, Res
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_cache.decorator import cache
 from fastapi_cache import FastAPICache
-from redis import asyncio as aioredis
 from fastapi.responses import JSONResponse, Response
 from fastapi.requests import Request
 
 
 from core.models import db_helper
 from core.models.event import Event
-from core.models.picture import Picture
 from core.models.user import User
 from core.config import settings
-from core.schemas.picture import PictureRead
 from core.schemas.event import EventRead, EventReadNoPictures, EventDescriptionUpdate, EventReadWithCategoryName
 from crud import events as events_crud
 
@@ -58,13 +54,20 @@ def events_key_builder(
     return f"{namespace}:{cache_key}"
 
 
+
+@router.get("/cache_reset")
+async def clear_cache(user: Annotated[User, Depends(get_current_user)]):
+    """Принудительно очищает кеш приложения."""
+    await FastAPICache.clear()
+
 @router.get("/inactive", response_model=list[EventReadWithCategoryName])
 async def get_all_inactive_events(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
 ):
-    """Возвращает администратору список неактивных съемок. Должен использоваться
-    на фронтенде для включения активности"""
+    """Возвращает администратору список неактивных съемок. Поскольку требуется имя категории,
+    дополнительно есть поле category, имя категории хранится в атрибуте
+    category.name. Должен использоваться на фронтенде для включения активности"""
     return await events_crud.get_inactive_events(db)
 
 @router.get("/{category}/{date}", response_model=EventRead)
@@ -265,6 +268,3 @@ async def delete_description_of_event(
     return await events_crud.delete_event_description(db, category, date)
 
 
-@router.patch("/cache_reset")
-async def clear_cache(user: Annotated[User, Depends(get_current_user)]):
-    await FastAPICache.clear()

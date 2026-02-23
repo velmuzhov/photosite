@@ -154,6 +154,56 @@ apiFormClient.interceptors.response.use(
   }
 );
 
+// Интерцептор запросов — добавляем токен перед каждым запросом
+apiFormFileClient.interceptors.request.use(
+  (config) => {
+    const token = getAccessToken();
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Интерцептор ответов — централизованная обработка 401
+apiFormFileClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // Если обновление уже идёт, добавляем запрос в очередь
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers['Authorization'] = `Bearer ${token}`;
+          return apiAuthClient(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const newToken = await refreshToken();
+        processQueue(null, newToken);
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+        return apiAuthClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError);
+        setAuthToken(null);
+        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Установка/удаление токена
 export const setAuthToken = (token) => {
   if (token) {
@@ -385,6 +435,46 @@ export const getInactiveEvents = async () => {
     return response.data;
   } catch (error) {
     console.error('Ошибка загрузки неактивных съёмок:', error);
+    throw error.response?.data || error.message;
+  }
+};
+
+// Обновление категории и даты съёмки
+export const editEventBaseData = async (category, date, newCategory, newDate) => {
+  try {
+    const formData = new FormData();
+    if (newCategory) formData.append('new_category', newCategory);
+    if (newDate) formData.append('new_date', newDate);
+
+    const response = await apiFormClient.patch(`/events/${category}/${date}`, formData);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка обновления категории и даты съёмки:', error);
+    throw error.response?.data || error.message;
+  }
+};
+
+// Обновление обложки съёмки
+export const editEventCover = async (category, date, newCover) => {
+  try {
+    const formData = new FormData();
+    formData.append('new_cover', newCover);
+
+    const response = await apiFormFileClient.patch(`/events/${category}/${date}/cover`, formData);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка обновления обложки съёмки:', error);
+    throw error.response?.data || error.message;
+  }
+};
+
+// Очистка кеша на бэкенде
+export const clearCache = async () => {
+  try {
+    const response = await apiAuthClient.get('/events/cache_reset');
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка очистки кеша:', error);
     throw error.response?.data || error.message;
   }
 };

@@ -18,6 +18,8 @@ import DeleteDescriptionForm from './Components/Admin/Forms/DeleteDescriptionFor
 import DeleteEventForm from './Components/Admin/Forms/DeleteEventForm';
 import ToggleActivityForm from './Components/Admin/Forms/ToggleActivityForm';
 import InactiveEventsPage from './Components/Admin/InactiveEventsPage';
+import UpdateCategoryAndDateForm from './Components/Admin/Forms/UpdateCategoryAndDateForm';
+import UpdateCoverForm from './Components/Admin/Forms/UpdateCoverForm';
 
 import About from './Pages/About';
 import EventDetail from './Components/EventDetail';
@@ -164,6 +166,22 @@ const App = () => {
             element={
               <PrivateRoute>
                 <InactiveEventsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/update-category-date"
+            element={
+              <PrivateRoute>
+                <UpdateCategoryAndDateForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/update-cover"
+            element={
+              <PrivateRoute>
+                <UpdateCoverForm />
               </PrivateRoute>
             }
           />
