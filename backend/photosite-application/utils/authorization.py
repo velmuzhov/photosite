@@ -1,3 +1,4 @@
+from typing import Annotated
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, timezone
@@ -62,7 +63,7 @@ def create_refresh_token(data: dict) -> str:
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: Annotated[str, Depends(oauth2_scheme)],
     db: AsyncSession = Depends(db_helper.session_getter),
 ):
     """Проверяет JWT-токен и возвращает пользователя из базы"""

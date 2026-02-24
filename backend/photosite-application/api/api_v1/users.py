@@ -16,6 +16,7 @@ from utils.authorization import (
     create_access_token,
     create_refresh_token,
     get_current_user,
+    oauth2_scheme,
 )
 from exceptions.user import incorrect_username_or_password, username_already_exists
 
@@ -49,7 +50,7 @@ async def login(
     user = await users_crud.get_user_by_username(db, form_data.username)
     if user is None or not verify_password(form_data.password, user.hashed_password):
         raise incorrect_username_or_password
-    
+
     access_token = create_access_token(
         data={
             "sub": user.username,
@@ -73,16 +74,10 @@ async def login(
 @router.post("/token/refresh")
 async def refresh_access_token(
     db: get_async_db,
-    authorization: Annotated[str | None, Header()] = None,
+    token: Annotated[str, Depends(oauth2_scheme)],
 ):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=400,
-            detail="Authorization header with Bearer token required"
-        )
 
-    authorization = authorization[7:]  # убираем "Bearer "
-    user = await get_current_user(authorization, db)
+    user = await get_current_user(token, db)
 
     access_token = create_access_token(
         data={
