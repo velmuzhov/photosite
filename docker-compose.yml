@@ -9,6 +9,8 @@ services:
       - test
     volumes:
       - ./backend/photosite-application/.env:/app/.env:ro
+      # Добавил, чтобы статика не копировалась в образ, но лежала на сервере и была доступна в приложении
+      - ./backend/photosite-application/static/:/app/static/
     ports:
       - "9000:8000"
     depends_on:
@@ -27,8 +29,8 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     # Убрать перед сборкой
-    ports:
-      - '5500:5432'
+    # ports:
+      # - '5500:5432'
     volumes:
       - photosite_data:/var/lib/postgresql/data
 
@@ -45,8 +47,8 @@ services:
 
   redis:
     image: "redis:alpine"
-    ports:
-      - "6379:6379"
+    # ports:
+      # - "6379:6379"
     # volumes:
     #   - redis-data:/data
     # command: redis-server --appendonly yes

@@ -18,6 +18,7 @@ Dockerfile
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
 **/*.py[cod]
+**/.mypy_cache
 
 # C extensions
 *.so
@@ -35,6 +36,7 @@ lib64/
 parts/
 sdist/
 var/
+static/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -88,3 +90,5 @@ venv/
 # VS Code
 .vscode/
 
+**/*.jpg
+**/*.jpeg
