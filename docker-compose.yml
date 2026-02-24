@@ -5,10 +5,10 @@ services:
       dockerfile: Dockerfile
     profiles:
       - general
-      # - dev
+      - dev
       - test
     volumes:
-      - ./backend/photosite-application:/app
+      - ./backend/photosite-application/.env:/app/.env:ro
     ports:
       - "9000:8000"
     depends_on:
