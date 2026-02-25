@@ -44,4 +44,7 @@ class EventRead(BaseEvent):
     id: int
     pictures: list[PictureRead]
 
- 
+class EventList(BaseModel):
+    total_count: int
+    events: list[EventReadNoPictures]
+

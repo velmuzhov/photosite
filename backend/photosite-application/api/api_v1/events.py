@@ -17,6 +17,7 @@ from core.schemas.event import (
     EventReadNoPictures,
     EventDescriptionUpdate,
     EventReadWithCategoryName,
+    EventList,
 )
 from crud import events as events_crud
 
@@ -88,7 +89,7 @@ async def get_one_event_pictures(
     return await events_crud.get_event_with_pictures(db, category, date)
 
 
-@router.get("/{category}")
+@router.get("/{category}", response_model=EventList)
 @cache(expire=settings.cache.term, key_builder=events_key_builder)  # type: ignore
 async def get_events_with_category(
     db: get_async_db,
