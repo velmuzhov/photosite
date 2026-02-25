@@ -54,8 +54,14 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Интерцептор запросов — добавляем токен перед каждым запросом
-apiAuthClient.interceptors.request.use(
+
+[
+  apiAuthClient,
+  apiFormClient,
+  apiFormFileClient
+].map((client) => {
+  // Интерцептор запросов — добавляем токен перед каждым запросом
+client.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
     if (token) {
@@ -67,7 +73,7 @@ apiAuthClient.interceptors.request.use(
 );
 
 // Интерцептор ответов — централизованная обработка 401
-apiAuthClient.interceptors.response.use(
+client.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
@@ -103,106 +109,8 @@ apiAuthClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+})
 
-// Интерцептор запросов — добавляем токен перед каждым запросом
-apiFormClient.interceptors.request.use(
-  (config) => {
-    const token = getAccessToken();
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Интерцептор ответов — централизованная обработка 401
-apiFormClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        // Если обновление уже идёт, добавляем запрос в очередь
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(token => {
-          originalRequest.headers['Authorization'] = `Bearer ${token}`;
-          return apiAuthClient(originalRequest);
-        });
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        const newToken = await refreshToken();
-        processQueue(null, newToken);
-        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-        return apiAuthClient(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError);
-        setAuthToken(null);
-        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
-      } finally {
-        isRefreshing = false;
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
-// Интерцептор запросов — добавляем токен перед каждым запросом
-apiFormFileClient.interceptors.request.use(
-  (config) => {
-    const token = getAccessToken();
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Интерцептор ответов — централизованная обработка 401
-apiFormFileClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        // Если обновление уже идёт, добавляем запрос в очередь
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(token => {
-          originalRequest.headers['Authorization'] = `Bearer ${token}`;
-          return apiAuthClient(originalRequest);
-        });
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        const newToken = await refreshToken();
-        processQueue(null, newToken);
-        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-        return apiAuthClient(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError);
-        setAuthToken(null);
-        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
-      } finally {
-        isRefreshing = false;
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
 
 // Установка/удаление токена
 export const setAuthToken = (token) => {
