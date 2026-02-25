@@ -1,11 +1,10 @@
 from typing import Annotated, Any
 import hashlib
 from collections.abc import Sequence, Callable
-from fastapi import APIRouter, Depends, Form, Path, Query, UploadFile, File, Response
+from fastapi import APIRouter, Depends, Form, Path, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_cache.decorator import cache
 from fastapi_cache import FastAPICache
-from fastapi.responses import JSONResponse, Response
 from fastapi.requests import Request
 
 
@@ -13,7 +12,12 @@ from core.models import db_helper
 from core.models.event import Event
 from core.models.user import User
 from core.config import settings
-from core.schemas.event import EventRead, EventReadNoPictures, EventDescriptionUpdate, EventReadWithCategoryName
+from core.schemas.event import (
+    EventRead,
+    EventReadNoPictures,
+    EventDescriptionUpdate,
+    EventReadWithCategoryName,
+)
 from crud import events as events_crud
 
 from utils.authorization import get_current_user
@@ -54,11 +58,11 @@ def events_key_builder(
     return f"{namespace}:{cache_key}"
 
 
-
 @router.get("/cache_reset")
 async def clear_cache(user: Annotated[User, Depends(get_current_user)]):
     """Принудительно очищает кеш приложения."""
     await FastAPICache.clear()
+
 
 @router.get("/inactive", response_model=list[EventReadWithCategoryName])
 async def get_all_inactive_events(
@@ -69,6 +73,7 @@ async def get_all_inactive_events(
     дополнительно есть поле category, имя категории хранится в атрибуте
     category.name. Должен использоваться на фронтенде для включения активности"""
     return await events_crud.get_inactive_events(db)
+
 
 @router.get("/{category}/{date}", response_model=EventRead)
 @cache(expire=settings.cache.term, key_builder=events_key_builder)  # type: ignore
@@ -88,7 +93,6 @@ async def get_one_event_pictures(
 async def get_events_with_category(
     db: get_async_db,
     category: Annotated[str, Path()],
-    response: Response,
     limit: Annotated[int, Query()] = settings.querysettings.limit,
     page: Annotated[int, Query()] = 1,
 ) -> dict[str, int | Sequence[Event]]:
@@ -248,11 +252,9 @@ async def get_all_events(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
     limit: Annotated[int, Query()] = settings.querysettings.limit,
-    page: Annotated[int, Query()] = 1,
 ):
     """Возвращает limit последних созданных съемок"""
     return await events_crud.get_events_by_date_created(db, limit)
-
 
 
 @router.delete("/{category}/{date}/description", response_model=EventReadNoPictures)
@@ -266,5 +268,3 @@ async def delete_description_of_event(
     await FastAPICache.clear()
 
     return await events_crud.delete_event_description(db, category, date)
-
-

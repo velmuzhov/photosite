@@ -1,24 +1,19 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Header, Body, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-import jwt
 
 from core.config import settings
 from crud import users as users_crud
 from core.models.db_helper import db_helper
-from core.models.user import User
-from core.schemas.user import UserCreate, UserRead
 from utils.authorization import (
-    hash_password,
     verify_password,
     create_access_token,
     create_refresh_token,
     get_current_user,
     oauth2_scheme,
 )
-from exceptions.user import incorrect_username_or_password, username_already_exists
+from exceptions.user import incorrect_username_or_password
 
 
 get_async_db = Annotated[AsyncSession, Depends(db_helper.session_getter)]
@@ -29,16 +24,6 @@ router = APIRouter(
         "Users",
     ],
 )
-
-
-# не должно быть в продакшене
-# @router.post("/", response_model=UserRead)
-# async def create_user(
-#     db: get_async_db,
-#     user: UserCreate,
-# ):
-#     """Создает нового пользователя. Закомментировать после публикации"""
-#     return await users_crud.create_user_with_username_and_password(db, user)
 
 
 @router.post("/token")
@@ -76,6 +61,8 @@ async def refresh_access_token(
     db: get_async_db,
     token: Annotated[str, Depends(oauth2_scheme)],
 ):
+    """Конечная точка для обновления access- и refresh-токена
+    по refresh-токену."""
 
     user = await get_current_user(token, db)
 
@@ -96,12 +83,3 @@ async def refresh_access_token(
         "refresh_token": refresh_token,
         "token_type": "bearer",
     }
-
-
-# удалить после тестирования
-# @router.get("/", response_model=list[UserRead])
-# async def get_all_users(db: get_async_db):
-#     """Выводит всех пользователей. Должна работать
-#     только на этапе разработки"""
-#     result = await db.scalars(select(User))
-#     return result.all()

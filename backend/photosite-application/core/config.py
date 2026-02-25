@@ -15,19 +15,28 @@ class ApiV1Prefix(BaseModel):
     events: str = "/events"
     users: str = "/users"
 
+
 class ApiPrefix(BaseModel):
     prefix: str = "/api"
     v1: ApiV1Prefix = ApiV1Prefix()
 
+
 class Static(BaseModel):
     base_image_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images"
-    image_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "full_size"
-    thumbnails_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "thumbnails"
-    covers_dir: Path = Path(__file__).parent.parent.resolve() / "static" / "images" / "event_covers"
+    image_dir: Path = (
+        Path(__file__).parent.parent.resolve() / "static" / "images" / "full_size"
+    )
+    thumbnails_dir: Path = (
+        Path(__file__).parent.parent.resolve() / "static" / "images" / "thumbnails"
+    )
+    covers_dir: Path = (
+        Path(__file__).parent.parent.resolve() / "static" / "images" / "event_covers"
+    )
 
     thumbnails_width: int = 640
     thumbnails_height: int = 800
     thumbnails_target_ratio: float = 5 / 4
+
 
 class Auth(BaseModel):
     access_token_expires_minutes: int = 1
@@ -35,9 +44,11 @@ class Auth(BaseModel):
     secret_key: str = "my_secret_key"
     algorithm: str = "HS256"
 
+
 class RedisConfig(BaseModel):
     url: str = "redis://localhost:6379"
     prefix: str = "fastapi-cache"
+
 
 class DatabaseConfig(BaseModel):
     url: PostgresDsn | None = None
@@ -54,8 +65,10 @@ class DatabaseConfig(BaseModel):
         "pk": "pk_%(table_name)s",
     }
 
+
 class QueryConfig(BaseModel):
     limit: int = 24
+
 
 class CashConfig(BaseModel):
     term: int = 60 * 60 * 24 * 7
@@ -86,5 +99,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
-print(settings.db.url)

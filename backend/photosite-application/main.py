@@ -12,7 +12,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
-from fastapi_cache.backends.inmemory import InMemoryBackend
 
 from api import router as api_router
 from logging_config import setup_logging
@@ -28,13 +27,11 @@ async def lifespan(app: FastAPI):
         settings.redis.url,
         encoding="utf-8",
     )
-    print(redis)
     FastAPICache.init(
         RedisBackend(redis),
         prefix=settings.redis.prefix,
     )
     yield
-    print("Dispose engine")
     await redis.close()
     await db_helper.dispose()
 
@@ -117,7 +114,7 @@ main_app.include_router(
 @main_app.get("/")
 async def work_check():
 
-    return {"message": "API is running... still What if I change it?"}
+    return {"message": "API is running... still What if I change it? And again?"}
 
 
 if __name__ == "__main__":
