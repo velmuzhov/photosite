@@ -1,0 +1,59 @@
+/* Контейнер для кнопок — располагаем их вертикально */
+.admin-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* Кнопки растягиваются на всю ширину контейнера */
+  gap: var(--spacing-md); /* Отступы между кнопками */
+  max-width: 400px; /* Ограничиваем максимальную ширину */
+  margin: var(--spacing-lg) auto; /* Центрируем контейнер */
+}
+
+/* Общие стили для всех кнопок в админке */
+.admin-page .btn {
+  background-color: #333333; /* Тёмно‑серый фон (вместо чёрного) */
+  color: #fff; /* Белый текст */
+  border: none; /* Убираем границы */
+  padding: var(--spacing-md) var(--spacing-lg); /* Единые отступы */
+  font-weight: var(--fw-medium); /* Единая жирность шрифта */
+  text-decoration: none; /* Убираем подчёркивание у ссылок */
+  text-align: center; /* Выравнивание текста по центру */
+  white-space: nowrap; /* Предотвращаем перенос текста */
+  transition: all 0.3s ease; /* Плавный переход всех свойств */
+  cursor: pointer; /* Курсор-указатель */
+  border-radius: var(--border-radius); /* Скругление углов */
+  width: 100%; /* Растягиваем на всю ширину родителя */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Лёгкая тень */
+}
+
+/* Эффект наведения: кнопка белая, текст чёрный */
+.admin-page .btn:hover {
+  background-color: #fff; /* Белый фон при наведении */
+  color: #000; /* Чёрный текст при наведении */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Более выраженная тень при наведении */
+}
+
+/* Стили для отключённого состояния (если понадобится) */
+.admin-page .btn:disabled {
+  background-color: var(--color-gray-light);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Дополнительные стили для кнопки «Очистить кеш» (она — обычная кнопка, а не ссылка) */
+/* .admin-page .btn[type="button"] { */
+  /* Наследуем общие стили, дополнительных отличий не требуется */
+/* } */
+
+/* Адаптивность: уменьшаем отступы на маленьких экранах */
+@media (max-width: 576px) {
+  .admin-buttons-container {
+    gap: var(--spacing-sm);
+    margin: var(--spacing-md) auto;
+  }
+  
+  .admin-page .btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+}

@@ -24,16 +24,24 @@ const Header = () => {
     navigate('/', { replace: true });
   };
 
-  // Перерендерим заголовок при изменении маршрута
+  // Закрываем меню при смене страницы
   useEffect(() => {
-    setIsMenuOpen(false); // Закрываем меню при смене страницы
+    setIsMenuOpen(false);
   }, [location.pathname]);
+
+  // Обработчик клика по пункту меню
+  const handleMenuItemClick = () => {
+    if (window.innerWidth < 768) {
+      // Закрываем меню только на мобильных устройствах
+      setIsMenuOpen(false);
+    }
+  };
 
   return (
     <header className="header fixed-top w-100 bg-white shadow">
       <div className="container d-flex justify-between align-items-center p-3">
         <div className="header__logo">
-          <Link to="/" className="nav-link">
+          <Link to="/" className="nav-link" onClick={handleMenuItemClick}>
             Velmuzhov
           </Link>
         </div>
@@ -47,37 +55,68 @@ const Header = () => {
         </button>
 
         <nav className={`header__nav ${isMenuOpen ? 'show' : ''}`}>
-          <ul className="nav-list d-flex flex-column flex-md-row align-items-stretch">
+          <ul className="nav-list">
             <li className="nav-item">
-              <Link to="/wedding" className="nav-link">Свадьбы</Link>
+              <Link
+                to="/wedding"
+                className={`nav-link ${location.pathname === '/wedding' ? 'active' : ''}`}
+                onClick={handleMenuItemClick}
+              >
+                Свадьбы
+              </Link>
             </li>
             <li className="nav-item">
-              <Link to="/portrait" className="nav-link">Портреты</Link>
+              <Link
+                to="/portrait"
+                className={`nav-link ${location.pathname === '/portrait' ? 'active' : ''}`}
+                onClick={handleMenuItemClick}
+              >
+                Портреты
+              </Link>
             </li>
             <li className="nav-item">
-              <Link to="/family" className="nav-link">Семья</Link>
+              <Link
+                to="/family"
+                className={`nav-link ${location.pathname === '/family' ? 'active' : ''}`}
+                onClick={handleMenuItemClick}
+              >
+                Семья
+              </Link>
             </li>
             <li className="nav-item">
-              <Link to="/about" className="nav-link">Обо мне</Link>
+              <Link
+                to="/about"
+                className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
+                onClick={handleMenuItemClick}
+              >
+                Обо мне
+              </Link>
             </li>
 
             {isAuthenticated && (
               <>
                 <li className="nav-item">
-                  <Link to="/admin" className="nav-link text-success">Админка</Link>
-                </li>
-                <li className="nav-item">
-                  <button
-                    onClick={handleLogout}
-                    className="nav-btn btn btn-sm btn-outline-danger"
-                  >
-                    Выход
-                  </button>
-                </li>
-              </>
-            )}
-          </ul>
-        </nav>
+                  <Link
+                    to="/admin"
+            className={`nav-link text-success ${location.pathname === '/admin' ? 'active' : ''}`}
+            onClick={handleMenuItemClick}
+          >
+            Админка
+          </Link>
+        </li>
+        <li className="nav-item">
+          <button
+            onClick={handleLogout}
+            className="nav-btn"
+            aria-label="Выход из аккаунта"
+          >
+            Выход
+          </button>
+        </li>
+      </>
+    )}
+  </ul>
+</nav>
       </div>
     </header>
   );

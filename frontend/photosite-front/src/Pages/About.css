@@ -1,14 +1,58 @@
 .about-page {
-  padding: 40px 20px;
+  padding: var(--spacing-lg) var(--spacing-md);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .about-page h1 {
-  font-size: 24px;
-  margin-bottom: 20px;
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-dark);
+  font-weight: var(--fw-bold);
 }
 
 .about-page p {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #555;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Дополнительные параграфы */
+.about-page p + p {
+  margin-top: var(--spacing-sm);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .about-page {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+  
+  .about-page h1 {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-md);
+  }
+}
+
+/* Планшетная версия */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .about-page {
+    padding: var(--spacing-lg) var(--spacing-md);
+    max-width: 90%;
+  }
+}
+
+/* Улучшенная типографика */
+.about-page {
+  font-family: var(--font-family-base);
+}
+
+/* Отступы для структурирования контента */
+.about-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.about-section:last-child {
+  margin-bottom: 0;
 }

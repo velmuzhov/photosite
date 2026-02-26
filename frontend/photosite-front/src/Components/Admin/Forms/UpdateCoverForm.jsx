@@ -46,7 +46,7 @@ const UpdateCoverForm = () => {
           required
         />
 
-        <FileInput
+        <FileInput className='improved-file-display'
           label="Новая обложка съёмки"
           accept="image/*"
           onChange={(e) => setNewCover(e.target.files[0])}

@@ -39,7 +39,7 @@ const AuthForm = ({ onLogin }) => {
   return (
     <form onSubmit={handleSubmit} className="auth-form">
       <h2>Вход в админку</h2>
-      {error && <p className="error-message">{error}</p>}
+      {error && <div className="alert alert-danger">{error}</div>}
 
       <div className="form-group">
         <label htmlFor="username">Логин:</label>
@@ -50,6 +50,7 @@ const AuthForm = ({ onLogin }) => {
           onChange={(e) => setUsername(e.target.value)}
           required
           disabled={loading}
+          className="form-control"
         />
       </div>
 
@@ -62,10 +63,11 @@ const AuthForm = ({ onLogin }) => {
           onChange={(e) => setPassword(e.target.value)}
           required
           disabled={loading}
+          className="form-control"
         />
       </div>
 
-      <button type="submit" disabled={loading}>
+      <button type="submit" disabled={loading} className="btn btn-primary w-100">
         {loading ? 'Вход...' : 'Войти'}
       </button>
     </form>

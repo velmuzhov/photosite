@@ -12,6 +12,8 @@ const EventPage = () => {
   const [currentImageSrc, setCurrentImageSrc] = useState('');
   const containerRef = useRef(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [loadedImages, setLoadedImages] = useState(new Set());
+  const imageRefs = useRef({});
 
   // Загрузка данных события
   useEffect(() => {
@@ -21,13 +23,19 @@ const EventPage = () => {
         setEvent(data);
       } catch (error) {
         console.error('Не удалось загрузить съёмку:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchEvent();
   }, [category, date]);
 
-  // Открытие лайтбокса
+  // Обработчик загрузки изображения
+  const handleImageLoad = (imageId) => {
+    setLoadedImages(prev => new Set(prev).add(imageId));
+  };
+
+  // Открытие лайтбокса — исправленная версия
   const openLightbox = (imgPath) => {
     setCurrentImageSrc(
       `${import.meta.env.VITE_BASE_FULLSIZE_PICTURES_URL}/${imgPath}`
@@ -42,7 +50,7 @@ const EventPage = () => {
     document.body.style.overflow = '';
   };
 
-  // Плавный скролл наверх (исправлено: скроллим window, а не контейнер)
+  // Плавный скролл наверх
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -58,11 +66,20 @@ const EventPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // Очищаем память при размонтировании
+    return () => {
+      imageRefs.current = {};
+    };
+  }, []);
+
   if (loading) {
     return (
-      <div className="event-page p-3">
-        <div className="d-flex justify-center">
-          <div className="loader"></div>
+      <div className="app-container">
+        <div className="event-page p-3">
+          <div className="d-flex justify-center">
+            <div className="loader"></div>
+          </div>
         </div>
       </div>
     );
@@ -70,68 +87,98 @@ const EventPage = () => {
 
   if (!event) {
     return (
-      <div className="event-page p-3">
-        <p className="text-center text-muted">Съёмка не найдена.</p>
-        <Link to="/" className="btn btn-primary mt-3 d-block w-fit mx-auto">
-          Вернуться на главную
-        </Link>
+      <div className="app-container">
+        <div className="event-page p-3">
+          <p className="text-center text-muted">Съёмка не найдена.</p>
+          <Link to="/" className="btn btn-primary mt-3 d-block w-fit mx-auto">
+            Вернуться на главную
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="event-page" ref={containerRef}>
-      {/* Кнопка «Наверх» */}
-      <button
-        className={`btn-to-top ${showBackToTop ? 'visible' : ''}`}
-        onClick={scrollToTop}
-        aria-label="Наверх"
-      >
-        ↑
-      </button>
+    <div className="app-container">
+      <div className="event-page" ref={containerRef}>
+        {/* Кнопка «Наверх» */}
+        <button
+          className={`btn-to-top ${showBackToTop ? 'visible' : ''}`}
+          onClick={scrollToTop}
+          aria-label="Наверх"
+        >
+          ↑
+        </button>
 
-      {/* Навигация */}
-      <Link to={`/${category}`} className="text-primary mb-3 d-inline-block">
-        ← Ко всем{' '}
-        {category === 'wedding'
-          ? 'свадьбам'
-          : category === 'portrait'
-          ? 'портретам'
-          : 'семьям'}
-      </Link>
+        {/* Дата съёмки */}
+        <p className="text-muted fs-small mb-2">
+          {event.date || date}
+        </p>
 
-      <h1 className="mb-4 fs-normal text-muted">{event.description || ''}</h1>
+        {/* Описание */}
+        <h1 className="mb-4 fs-normal text-muted">{event.description || ''}</h1>
 
-      {/* Галерея с соотношением 5:4 */}
-      <div className="gallery-grid">
-        {event.pictures?.map((img, index) => (
-          <div
-            key={index}
-            className="gallery-item ratio-5-4"
-            onClick={() => openLightbox(img.path)}
+        {/* Галерея с соотношением 5:4 */}
+        <div className="gallery-grid">
+          {event.pictures?.map((img, index) => {
+            const imageId = `image-${index}`;
+
+            return (
+              <div
+                key={index}
+                className="gallery-item ratio-5-4"
+                onClick={() => openLightbox(img.path)}
+              >
+                <img
+                  ref={(el) => { imageRefs.current[imageId] = el; }}
+                  src={`${import.meta.env.VITE_BASE_THUMBNAILS_PICTURES_URL}/${img.path}`}
+                  alt={`Фото ${index + 1}`}
+                  className={`gallery-image ${loadedImages.has(imageId) ? 'loaded' : ''}`}
+                  loading="lazy"
+                  onLoad={() => handleImageLoad(imageId)}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+            const parent = e.target.parentElement;
+            parent.style.background = '#e0e0e0';
+            parent.textContent = 'Ошибка загрузки';
+            parent.style.color = '#666';
+            parent.style.display = 'flex';
+            parent.style.justifyContent = 'center';
+            parent.style.alignItems = 'center';
+            parent.style.fontSize = '14px';
+          }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Кнопки внизу страницы */}
+        <div className="d-flex gap-md justify-center mt-lg">
+          <Link
+            to={`/${category}`}
+            className="btn btn-secondary"
           >
-            <img
-              src={`${import.meta.env.VITE_BASE_THUMBNAILS_PICTURES_URL}/${img.path}`}
-              alt={`Фото ${index + 1}`}
-              className="gallery-image"
-              loading="lazy"
-            />
-          </div>
-        ))}
+            ← К{' '}
+            {category === 'wedding'
+              ? 'свадьбам'
+              : category === 'portrait'
+              ? 'портретам'
+              : 'семьям'}
+          </Link>
+          <Link to="/" className="btn btn-secondary">
+            На главную
+          </Link>
+        </div>
+
+        {/* Лайтбокс */}
+        {isLightboxOpen && (
+          <Lightbox
+            imageSrc={currentImageSrc}
+            onClose={closeLightbox}
+          />
+        )}
       </div>
-
-
-      <Link to="/" className="btn btn-secondary">
-        Вернуться на главную
-      </Link>
-
-      {/* Лайтбокс */}
-      {isLightboxOpen && (
-        <Lightbox
-          imageSrc={currentImageSrc}
-          onClose={closeLightbox}
-        />
-      )}
     </div>
   );
 };

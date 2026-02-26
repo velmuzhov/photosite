@@ -1,45 +1,45 @@
-// Components/Admin/AdminPage.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { clearCache } from '../../services/api';
+import './AdminPage.css'; // Импортируем стили
 
 const AdminPage = () => {
   return (
-    <div className="app-container p-4">
+    <div className="app-container p-4 admin-page">
       <h1>Админка</h1>
 
-      <div className="flex-container mt-4 gap-3">
+      <div className="admin-buttons-container mt-4">
         <Link
           to="/admin/create-shoot"
-          className="btn bg-primary text-light rounded"
+          className="btn"
         >
           Создать съёмку
         </Link>
 
         <Link
           to="/admin/add-pictures"
-          className="btn bg-secondary text-light rounded"
+          className="btn"
         >
           Добавить фотографии к съёмке
         </Link>
 
         <Link
           to="/admin/delete-pictures"
-          className="btn bg-danger text-light rounded"
+          className="btn"
         >
           Удалить фотографии из съёмки
         </Link>
 
         <Link
           to="/admin/update-description"
-          className="btn bg-warning text-dark rounded"
+          className="btn"
         >
           Обновить описание съёмки
         </Link>
 
         <Link
           to="/admin/delete-description"
-          className="btn bg-dark text-light rounded"
+          className="btn"
         >
           Удалить описание съёмки
         </Link>
@@ -47,34 +47,39 @@ const AdminPage = () => {
         {/* Новая ссылка для удаления съёмки */}
         <Link
           to="/admin/delete-event"
-          className="btn bg-danger text-light rounded"
+          className="btn"
         >
           Удалить съёмку
         </Link>
+
         <Link
           to="/admin/toggle-activity"
-          className="btn bg-info text-light rounded"
+          className="btn"
         >
           Изменить активность съёмки
         </Link>
+
         <Link
           to="/admin/inactive-events"
-          className="btn bg-info text-light rounded"
+          className="btn"
         >
           Показать неактивные съёмки
         </Link>
+
         <Link
           to="/admin/update-category-date"
-          className="btn bg-warning text-dark rounded"
+          className="btn"
         >
           Обновить категорию и дату съёмки
         </Link>
+
         <Link
           to="/admin/update-cover"
-          className="btn bg-success text-light rounded"
+          className="btn"
         >
           Обновить обложку съёмки
         </Link>
+
         <button
           onClick={async () => {
             try {
@@ -86,7 +91,7 @@ const AdminPage = () => {
               );
             }
           }}
-          className="btn bg-danger text-light rounded"
+          className="btn"
         >
           Очистить кеш
         </button>

@@ -25,6 +25,7 @@ import About from './Pages/About';
 import EventDetail from './Components/EventDetail';
 import Login from './Pages/Login';
 import Header from './Components/Header';
+import ScrollToTop from './Components/ScrollToTop';
 import './App.css';
 
 const App = () => {
@@ -57,6 +58,7 @@ const App = () => {
 
   return (
     <Router>
+      <ScrollToTop />
       <Header />
       <div className="app-container">
         <Routes>

@@ -1,14 +1,83 @@
 .home-page {
-  padding: 40px 20px;
+  padding: var(--spacing-xl) var(--spacing-lg);
   text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .home-page h1 {
-  font-size: 28px;
-  margin-bottom: 20px;
+  font-size: var(--font-size-xxl);
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text);
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
 }
 
 .home-page p {
-  font-size: 18px;
-  color: #666;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-base);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Дополнительный декоративный элемент */
+.home-page::before {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: var(--color-primary);
+  margin: 0 auto var(--spacing-md);
+  border-radius: 2px;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .home-page {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+  
+  .home-page h1 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .home-page p {
+    font-size: var(--font-size-base);
+    max-width: 90%;
+  }
+}
+
+/* Планшетная версия */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .home-page {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+  
+  .home-page p {
+    max-width: 500px;
+  }
+}
+
+/* Улучшенная типографика */
+.home-page {
+  font-family: var(--font-family-base);
+}
+
+/* Анимация появления */
+.home-page {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

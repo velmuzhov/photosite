@@ -10,12 +10,28 @@
   align-items: center;
   z-index: 9999;
   cursor: zoom-out;
+  animation: fadeIn 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .lightbox-image {
   max-width: 90%;
   max-height: 90vh;
   object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 1; /* Убрано скрытие по умолчанию — изображение сразу видно */
+  display: block; /* Убрано скрытие по умолчанию */
 }
 
 .lightbox-close {
@@ -32,5 +48,56 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 10000;
+  z-index: 10002;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  color: #333;
+}
+
+.lightbox-close:hover {
+  background-color: #f8f9fa;
+  transform: scale(1.1);
+}
+
+.lightbox-close:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+}
+
+.lightbox-overlay.closing {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .lightbox-close {
+    top: 15px;
+    right: 15px;
+  }
+
+  .lightbox-image {
+    max-width: 95%;
+    max-height: 85vh;
+  }
+}
+
+/* Улучшенная доступность */
+.lightbox-overlay:focus-within {
+  outline: 2px solid #007bff;
+  outline-offset: -2px;
+}
+
+/* Оптимизация производительности */
+.lightbox-overlay,
+.lightbox-close,
+.lightbox-image {
+  will-change: opacity, transform;
 }

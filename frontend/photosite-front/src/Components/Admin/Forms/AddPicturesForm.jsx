@@ -43,7 +43,7 @@ const AddPicturesForm = () => {
           required
         />
 
-        <FileInput
+        <FileInput className='improved-file-display'
           label="Фотографии для загрузки"
           multiple
           accept="image/*"

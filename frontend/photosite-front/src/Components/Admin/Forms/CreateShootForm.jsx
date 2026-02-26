@@ -64,14 +64,14 @@ const CreateShootForm = () => {
           />
         </div>
 
-        <FileInput
+        <FileInput className='improved-file-display'
           label="Обложка съёмки"
           accept="image/*"
           onChange={(e) => setCoverFile(e.target.files[0])}
           required
         />
 
-        <FileInput
+        <FileInput className='improved-file-display'
           label="Фотографии съёмки"
           multiple
           accept="image/*"

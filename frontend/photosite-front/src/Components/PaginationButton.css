@@ -1,33 +1,36 @@
 .pagination-btn {
-  padding: 0.6rem 1.2rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--fw-medium);
   transition: all 0.3s ease;
   min-width: 40px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pagination-btn-default {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .pagination-btn-default:hover:not(.pagination-btn-disabled) {
-  background-color: #0056b3;
+  background-color: var(--color-primary-dark);
   transform: translateY(-1px);
 }
 
 .pagination-btn-outline {
   background-color: transparent;
-  color: #007bff;
-  border: 2px solid #007bff;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
 }
 
 .pagination-btn-outline:hover:not(.pagination-btn-disabled) {
-  background-color: #e9f0ff;
+  background-color: var(--color-primary-light);
   transform: translateY(-1px);
 }
 
@@ -39,8 +42,34 @@
 
 /* Активная страница */
 .pagination-btn.active {
-  background-color: #0056b3 !important;
-  color: white !important;
-  border-color: #004085 !important;
+  background-color: var(--color-primary-dark) !important;
+  color: var(--color-white) !important;
+  border-color: var(--color-primary-darker) !important;
   pointer-events: none;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+/* Фокус для доступности */
+.pagination-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+  z-index: 1;
+}
+
+/* Состояния нажатия */
+.pagination-btn:active {
+  transform: translateY(0);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .pagination-btn {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* Улучшенная анимация наведения */
+.pagination-btn {
+  will-change: transform, background-color;
 }

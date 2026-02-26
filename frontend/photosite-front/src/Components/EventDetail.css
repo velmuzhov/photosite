@@ -1,36 +1,56 @@
-* {
-  box-sizing: border-box;
-}
-
 .event-page {
   position: relative;
   min-height: 100vh;
-  padding: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  margin: 0 auto;
-  max-width: 100%;
-  overflow-x: hidden; /* Запрещаем горизонтальную прокрутку */
+  padding: var(--spacing-xs);
+  font-family: var(--font-family-base);
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* Галерея с фиксированным соотношением 5:4 (высота : ширина) */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 0.3rem;          /* Уменьшено с 1rem → 0.3rem (~в 3 раза) */
-  margin: 1.5rem 0;
+  grid-template-columns: repeat(2, 1fr); /* По умолчанию — 2 колонки для самых маленьких экранов */
+  gap: 8px; /* Оптимальный отступ между карточками */
+  margin: var(--spacing-lg) 0;
   width: 100%;
-  padding: 0 1rem;
-  justify-items: center;
+  padding: 0; /* Убираем внутренние отступы */
+  justify-items: start; /* Выравнивание влево */
+  box-sizing: border-box;
 }
 
 .gallery-item.ratio-5-4 {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
   cursor: pointer;
   width: 100%;
   padding-top: 125%; /* 5:4 = 125% */
+  margin: 0; /* Гарантируем отсутствие внешних отступов */
+  background: #f5f5f5; /* Базовый фон для всех карточек */
+}
+
+/* Скелетон-эффект для загрузки изображений */
+.gallery-item.ratio-5-4::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      #f0f0f0 25%,
+      #e0e0e0 50%,
+      #f0f0f0 75%
+    );
+  background-size: 200% 100%;
+  animation: skeleton-shine 2s infinite;
+  z-index: 1;
+}
+
+@keyframes skeleton-shine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .gallery-image {
@@ -40,54 +60,35 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: opacity 0.5s ease;
+  opacity: 0; /* Начинаем с невидимого изображения */
+  z-index: 2;
+  display: block; /* Устраняет лишний отступ под изображением */
+}
+
+.gallery-image.loaded {
+  opacity: 1; /* Показываем после загрузки */
 }
 
 .gallery-item:hover .gallery-image {
   transform: scale(1.05);
 }
 
-/* Адаптивные правила для количества колонок */
-@media (max-width: 575px) {
-  /* Мобильные: сделал пока 2 колонки, нужно решить, может, лучше 1 */
-  .gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
-    padding: 0 0.5rem;
-    gap: 0.25rem;     /* Уменьшено с 0.75rem → 0.25rem */
-  }
-}
+/* Адаптивные правила для количества колонок и отступов */
 
-@media (min-width: 576px) and (max-width: 767px) {
-  /* Маленькие планшеты: 2 колонки */
-  .gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.3rem;     /* Уменьшено с 1rem → 0.3rem */
-  }
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  /* Планшеты/ноутбуки: 3 колонки */
+/* Экраны от 768px до 1199px — 3 колонки (промежуточные экраны) */
+@media (min-width: 768px) and (max-width: 1199px) {
   .gallery-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.4rem;     /* Уменьшено с 1.25rem → 0.4rem */
+    gap: 9px;
   }
 }
 
-@media (min-width: 992px) {
-  /* Десктопы: максимум 4 колонки */
+/* Экраны от 1200px (FullHD и выше) — 4 колонки */
+@media (min-width: 1200px) {
   .gallery-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;     /* Уменьшено с 1.5rem → 0.5rem */
-    padding: 0 2rem;
-  }
-}
-
-@media (min-width: 1200px) {
-  /* Большие экраны: контролируем ширину */
-  .gallery-grid {
-    max-width: calc(100% - 4rem);
-    margin-left: auto;
-    margin-right: auto;
+    gap: 10px;
   }
   
   .gallery-item.ratio-5-4 {
@@ -98,12 +99,12 @@
 /* Кнопка «Наверх» */
 .btn-to-top {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: var(--spacing-md);
+  right: var(--spacing-md);
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: #007bff;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   cursor: pointer;
@@ -115,7 +116,7 @@
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.2s ease;
   z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
 }
 
 .btn-to-top.visible {
@@ -125,7 +126,7 @@
 
 .btn-to-top:hover {
   transform: scale(1.1);
-  background-color: #0056b3;
+  background-color: #0056b3; /* Тёмный оттенок primary */
 }
 
 .btn-to-top:focus {
@@ -156,8 +157,8 @@
 
 .lightbox-close {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -167,85 +168,32 @@
   justify-content: center;
   align-items: center;
   font-size: 1.5rem;
-  color: #333;
+  color: var(--color-text);
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .lightbox-close:hover {
-  background-color: #f0f0f0;
+  background-color: var(--color-light);
 }
 
 .lightbox-image {
   max-width: 90vw;
   max-height: 85vh;
-  border-radius: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Дополнительные стили */
 .event-description {
-  margin: 1.5rem 0;
-  line-height: 1.6;
+  margin: var(--spacing-lg) 0;
+  line-height: var(--line-height-base);
 }
 
-.btn {
-  display: inline-block;
-  text-decoration: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  font-weight: 500;
-  text-align: center;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.text-primary {
-  color: #007bff;
-}
-
-.text-muted {
-  color: #6c757d;
-}
-
-/* Утилиты */
-.d-flex {
-  display: flex;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.p-3 {
-  padding: 1rem;
-}
-
-.mb-3 {
-  margin-bottom: 1rem;
-}
-
-.mb-4 {
-  margin-bottom: 1.5rem;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-.w-fit {
-  width: fit-content;
-}
-
-.mx-auto {
-  margin-left: auto;
-  margin-right: auto;
+/* Стиль для даты съёмки */
+.event-date {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 400;
 }

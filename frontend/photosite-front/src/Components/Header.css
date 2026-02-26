@@ -2,9 +2,18 @@
   z-index: 1000;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+/* Логотип */
+.header__logo {
+  font-family: 'Georgia', serif;
+  font-size: var(--font-size-xl);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  letter-spacing: -0.5px;
+}
+
+.header__logo a {
+  text-decoration: none;
+  color: inherit;
 }
 
 /* Кнопка-бургер */
@@ -13,7 +22,10 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #007bff;
+  color: #000; /* Чёрный цвет */
+  font-weight: bold; /* Более жирный шрифт */
+  padding: 0;
+  margin: 0;
 }
 
 @media (min-width: 768px) {
@@ -29,12 +41,15 @@
   top: 70px;
   left: 0;
   right: 0;
-  background-color: white;
-  padding: 20px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-bg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow);
   z-index: 999;
   overflow-y: auto;
   max-height: calc(100vh - 70px);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 @media (min-width: 768px) {
@@ -46,11 +61,16 @@
     padding: 0;
     overflow: visible;
     max-height: none;
+    opacity: 1;
+    transform: translateY(0);
+    transition: none; /* Отключаем анимацию на десктопе */
   }
 }
 
 .header__nav.show {
   display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Список меню */
@@ -66,62 +86,72 @@
   .nav-list {
     flex-direction: row;
     align-items: center;
+    justify-content: flex-end; /* Выравниваем пункты по правому краю */
+    gap: var(--spacing-lg); /* Задаём расстояние между пунктами */
   }
 }
 
 /* Пункты меню */
 .nav-item {
-  margin-bottom: 10px;
+  margin-bottom: var(--spacing-sm);
 }
 
 @media (min-width: 768px) {
   .nav-item {
-    margin-bottom: 0;
-    margin-right: 20px; /* Увеличенные отступы между пунктами */
+    margin-bottom: 0; /* Убираем вертикальный отступ на десктопе */
   }
 }
 
 /* Ссылки в меню */
 .nav-link {
   text-decoration: none;
-  color: #333; /* Нейтральный серый вместо синего */
-  font-weight: 500;
+  color: #000; /* Всегда чёрный цвет */
+  font-weight: var(--fw-medium);
   transition: color 0.3s ease;
   display: block;
-  padding: 8px 0;
+  padding: var(--spacing-xs) 0;
 }
 
 .nav-link:hover {
-  color: #007bff; /* Синий при наведении */
+  color: #000; /* Остаётся чёрным при наведении */
   text-decoration: none;
+}
+
+/* Активные ссылки — выделяем текущий маршрут */
+.nav-link.active {
+  color: #000; /* Остаётся чёрным для активного пункта */
+  font-weight: var(--fw-semibold); /* Увеличиваем жирность для активного пункта */
 }
 
 /* Кнопки в меню (выход/вход) */
 .nav-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  border: 1px solid #000; /* Чёрная рамка */
+  color: #000; /* Чёрный текст */
+  background-color: transparent;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--fw-medium); /* Средняя жирность */
+}
+
+.nav-btn:hover {
+  background-color: #000; /* Чёрный фон при наведении */
+  color: white; /* Белый текст при наведении */
 }
 
 /* Адаптация для очень узких экранов */
 @media (max-width: 360px) {
-  .nav-item {
-    margin-right: 10px !important;
-  }
   .nav-link {
-    font-size: 14px;
-    padding: 6px 0;
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-xs) 0;
   }
 }
 
-.header__logo-link {
-  text-decoration: none;
-  color: inherit;
-}
-
-.header__logo {
-  font-family: 'Georgia', serif;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #212529;
-  letter-spacing: -0.5px;
+/* Дополнительные стили для авторизованных пользователей */
+.text-success {
+  color: #000 !important; /* Чёрный для пунктов админки */
+  font-weight: var(--fw-semibold) !important; /* Более жирный шрифт для админки */
 }

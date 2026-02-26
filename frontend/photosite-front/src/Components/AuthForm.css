@@ -1,52 +1,21 @@
 .auth-form {
   max-width: 400px;
-  margin: 40px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #f9f9f9;
+  margin: var(--spacing-lg) auto;
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-bg);
 }
 
 .auth-form h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-lg);
 }
 
-.error-message {
-  color: red;
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-button:disabled {
-  background-color: #6c757d;
-}
+/* Используем общие стили из App.css для:
+ * .alert, .alert-danger — уведомления
+ * .form-group — группы форм
+ * .form-control — поля ввода
+ * .btn, .btn-primary — кнопки
+ * .w-100 — ширина 100 %
+ */
