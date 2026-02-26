@@ -55,6 +55,7 @@ const processQueue = (error, token = null) => {
 };
 
 
+// Интерцепторы для клиентов, связанных с запросами, требующими авторизации
 [
   apiAuthClient,
   apiFormClient,
