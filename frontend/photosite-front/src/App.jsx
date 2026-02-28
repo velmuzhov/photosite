@@ -36,6 +36,7 @@ const App = () => {
     { path: 'wedding', title: 'Свадьбы' },
     { path: 'portrait', title: 'Портреты' },
     { path: 'family', title: 'Семья' },
+    { path: 'blog', title: 'Блог'},
   ];
 
   const PrivateRoute = ({ children }) => {

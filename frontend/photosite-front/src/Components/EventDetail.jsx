@@ -164,7 +164,9 @@ const EventPage = () => {
               ? 'свадьбам'
               : category === 'portrait'
               ? 'портретам'
-              : 'семьям'}
+              : category === 'blog'
+              ? 'блогу'
+              : 'семейным'}
           </Link>
           <Link to="/" className="btn btn-secondary">
             На главную

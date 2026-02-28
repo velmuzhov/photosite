@@ -19,6 +19,7 @@ const CategorySelector = ({
       <option value="wedding">Свадьба</option>
       <option value="portrait">Портрет</option>
       <option value="family">Семья</option>
+      <option value="blog">Блог</option>
     </select>
   </div>
 );
