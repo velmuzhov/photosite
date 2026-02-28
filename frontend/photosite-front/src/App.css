@@ -787,3 +787,18 @@ ul, ol {
     padding-right: 3rem;
   }
 }
+
+
+@media (max-width: 767px) {
+  .app-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .gallery-grid {
+    padding: 0 2px; /* Тонкие поля по 2 px */
+    margin: var(--spacing-lg) 0;
+    width: 100%;
+  }
+}
+
