@@ -60,9 +60,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: 
-    opacity 0.5s ease,
-    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity 0.5s ease;
   opacity: 0; /* Начинаем с невидимого изображения */
   z-index: 2;
   display: block; /* Устраняет лишний отступ под изображением */
@@ -79,7 +77,7 @@
 /* Адаптивные правила для количества колонок и отступов */
 
 /* Экраны от 768px до 1199px — 3 колонки (промежуточные экраны) */
-@media (min-width: 768px) and (max-width: 1199px) {
+@media (min-width: 768px) and (max-width: 1354px) {
   .gallery-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 9px;
@@ -87,7 +85,7 @@
 }
 
 /* Экраны от 1200px (FullHD и выше) — 4 колонки */
-@media (min-width: 1200px) {
+@media (min-width: 1354px) {
   .gallery-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;

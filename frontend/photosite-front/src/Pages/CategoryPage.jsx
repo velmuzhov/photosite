@@ -32,7 +32,7 @@ const CategoryPage = ({ category, title }) => {
         setTotalCount(Number(total) || 0);
       } catch (err) {
         console.error(`Не удалось загрузить ${title}:`, err);
-        setError('Произошла ошибка при загрузке событий. Пожалуйста, попробуйте позже.');
+        setError('Произошла ошибка при загрузке съемок. Пожалуйста, попробуйте позже.');
         setEvents([]);
         setTotalCount(0);
       }
@@ -62,7 +62,7 @@ const CategoryPage = ({ category, title }) => {
 
   const renderLoader = () => (
     <div className="loader-container">
-      <div className="loader" aria-label="Загрузка событий..."></div>
+      <div className="loader" aria-label="Загрузка съемок..."></div>
       <p className="loading-state">Загрузка</p>
     </div>
   );

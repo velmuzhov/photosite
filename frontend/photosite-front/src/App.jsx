@@ -35,7 +35,7 @@ const App = () => {
   const categories = [
     { path: 'wedding', title: 'Свадьбы' },
     { path: 'portrait', title: 'Портреты' },
-    { path: 'family', title: 'Семья' },
+    { path: 'family', title: 'Семьи' },
     { path: 'blog', title: 'Блог'},
   ];
 
