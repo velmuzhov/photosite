@@ -12,7 +12,7 @@ class CategoryName(Enum):
     WEDDING = "wedding"
     PORTRAIT = "portrait"
     FAMILY = "family"
-    EVENT = "event"
+    BLOG = "blog"
 
 
 class Category(Base):
@@ -24,7 +24,7 @@ class Category(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "name in ('wedding', 'portrait', 'family', 'event')",
+            "name in ('wedding', 'portrait', 'family', 'blog')",
             name="check_categoryname_valid",
         ),
     )

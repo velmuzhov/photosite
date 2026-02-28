@@ -1,6 +1,7 @@
 from collections.abc import AsyncGenerator, Sequence
 import io
 from datetime import date
+import time
 
 import pytest
 from fastapi import UploadFile
@@ -76,7 +77,7 @@ class TestUploadPictures:
         assert (date_dir / "456.jpeg").exists()
         assert (date_dir / "789.jpeg").exists()
 
-        cover_file = mock_settings.static.image_dir / event.cover
+        cover_file = mock_settings.static.base_image_dir / event.cover
         assert cover_file.exists()
 
     @pytest.mark.asyncio
@@ -250,7 +251,7 @@ class TestUploadPictures:
         assert event.cover == f"event_covers/{category_name}/{upload_date}/333.jpg"
 
         cover_path = (
-            mock_settings.static.image_dir
+            mock_settings.static.base_image_dir
             / "event_covers"
             / category_name
             / upload_date

@@ -25,8 +25,10 @@ from utils.authorization import get_current_user
 from main import main_app
 
 # Временная папка для картинок
-TEST_STATIC_DIR = Path(__file__).parent.parent.resolve() / "test_static" / "images"
-
+TEST_IMAGE_DIR = Path(__file__).parent.parent.resolve() / "test_static" / "images" / "fullsize"
+TEST_THUMBNAILS_DIR = Path(__file__).parent.parent.resolve() / "test_static" / "images" / "thumbnails"
+TEST_COVERS_DIR = Path(__file__).parent.parent.resolve() / "test_static" / "images" / "event_covers"
+TEST_BASE_IMAGE_DIR = Path(__file__).parent.parent.resolve() / "test_static" / "images"
 
 # Тестовая БД
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
@@ -120,27 +122,63 @@ async def authenticated_client(client: AsyncClient, test_user: User, db: AsyncSe
 @pytest.fixture(autouse=True)
 def setup_test_static_dir():
     """Создаёт и безопасно очищает тестовую статическую директорию."""
-    TEST_STATIC_DIR.mkdir(parents=True, exist_ok=True)
+    TEST_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    TEST_THUMBNAILS_DIR.mkdir(parents=True, exist_ok=True)
+    TEST_COVERS_DIR.mkdir(parents=True, exist_ok=True)
+    TEST_BASE_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
     yield
 
-    if TEST_STATIC_DIR.exists():
+    if TEST_IMAGE_DIR.exists():
         try:
-            shutil.rmtree(TEST_STATIC_DIR, ignore_errors=True)
+            shutil.rmtree(TEST_IMAGE_DIR, ignore_errors=True)
         except Exception as e:
-            print(f"Ошибка: не удалось удалить {TEST_STATIC_DIR}: {e}")
+            print(f"Ошибка: не удалось удалить {TEST_IMAGE_DIR}: {e}")
+    if TEST_THUMBNAILS_DIR.exists():
+        try:
+            shutil.rmtree(TEST_THUMBNAILS_DIR, ignore_errors=True)
+        except Exception as e:
+            print(f"Ошибка: не удалось удалить {TEST_THUMBNAILS_DIR}: {e}")
+    if TEST_COVERS_DIR.exists():
+        try:
+            shutil.rmtree(TEST_COVERS_DIR, ignore_errors=True)
+        except Exception as e:
+            print(f"Ошибка: не удалось удалить {TEST_COVERS_DIR}: {e}")
+    if TEST_BASE_IMAGE_DIR.exists():
+        try:
+            shutil.rmtree(TEST_COVERS_DIR, ignore_errors=True)
+        except Exception as e:
+            print(f"Ошибка: не удалось удалить {TEST_COVERS_DIR}: {e}")
 
 
 @pytest.fixture(autouse=True)
 def mock_settings():
     """Переопределяет settings для тестов (указываем test_static)."""
-    original = settings.static.image_dir
-    settings.static.image_dir = TEST_STATIC_DIR
+    original_image = settings.static.image_dir
+    original_thumbnails = settings.static.thumbnails_dir
+    original_covers = settings.static.covers_dir
+    original_base_image = settings.static.base_image_dir
+    settings.static.image_dir = TEST_IMAGE_DIR
+    settings.static.thumbnails_dir = TEST_THUMBNAILS_DIR
+    settings.static.covers_dir = TEST_COVERS_DIR
+    settings.static.base_image_dir = TEST_BASE_IMAGE_DIR
     yield settings
-    settings.static.image_dir = original
+    settings.static.image_dir = original_image
+    settings.static.thumbnails_dir = original_thumbnails
+    settings.static.covers_dir = original_covers
+    settings.static.base_image_dir = original_base_image
 
 @pytest_asyncio.fixture(autouse=True)
 async def init_test_cache():
     FastAPICache.init(InMemoryBackend(), prefix="test-")
     yield
     FastAPICache.reset()  # очищает кеш после теста
+
+@pytest.fixture(autouse=True)
+def mock_save_thumbnails(monkeypatch):
+    def test_resize_and_save_image(input_path: Path, output_path: Path):
+        print("We start")
+        data = input_path.read_bytes()
+        output_path.parent.mkdir(exist_ok=True, parents=True)
+        output_path.write_bytes(data)
+    monkeypatch.setattr("utils.pictures.resize_and_crop_image", test_resize_and_save_image)

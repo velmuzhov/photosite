@@ -118,10 +118,11 @@ class TestGetEventsWithCategory:
         assert response.status_code == 200
         data = response.json()
 
-        assert len(data) == 3
-        assert "2024-05-28" in data[2]["date"]
-        assert "2024-05-31" in data[1]["date"]
-        assert "2024-07-20" in data[0]["date"]
+        assert len(data["events"]) == 3
+        assert data["total_count"] == 3
+        assert "2024-05-28" in data["events"][2]["date"]
+        assert "2024-05-31" in data["events"][1]["date"]
+        assert "2024-07-20" in data["events"][0]["date"]
 
     @pytest.mark.asyncio
     async def test_get_events_with_category_not_found(
@@ -145,7 +146,8 @@ class TestGetEventsWithCategory:
         assert response.status_code == 200
         data = response.json()
 
-        assert len(data) == 0
+        assert len(data["events"]) == 0
+        assert data["total_count"] == 0
 
 
 class TestAddPicturesToExistingEvent:

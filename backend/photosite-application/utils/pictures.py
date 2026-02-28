@@ -1,9 +1,8 @@
 import shutil
-from typing import Annotated
 from datetime import date as dt_date
 from pathlib import Path
 import aiofiles
-from fastapi import Form, UploadFile, File, HTTPException, status
+from fastapi import UploadFile, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models.picture import Picture
 from core.models.category import Category
@@ -186,10 +185,6 @@ async def save_multiple_files_to_event(
     for item in dir_for_upload.iterdir():
         if item.is_file():
             resize_and_crop_image(item, dir_for_thumbnails / item.name)
-
-    
-
-    
 
     try:
         await db.commit()
