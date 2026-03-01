@@ -4,6 +4,7 @@ from fastapi import Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 import hashlib
 
+
 def events_key_builder(
     func: Callable[..., Any],
     namespace: str = "",
