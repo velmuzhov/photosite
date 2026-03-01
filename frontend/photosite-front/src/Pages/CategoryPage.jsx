@@ -32,7 +32,7 @@ const CategoryPage = ({ category, title }) => {
         setTotalCount(Number(total) || 0);
       } catch (err) {
         console.error(`Не удалось загрузить ${title}:`, err);
-        setError('Произошла ошибка при загрузке съемок. Пожалуйста, попробуйте позже.');
+        setError('Произошла ошибка. Пожалуйста, попробуйте позже.');
         setEvents([]);
         setTotalCount(0);
       }
@@ -57,7 +57,99 @@ const CategoryPage = ({ category, title }) => {
   };
 
   const renderPagination = () => {
-    // ... существующая логика пагинации
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(
+          <PaginationButton
+            key={i}
+            onClick={() => handlePageChange(i)}
+            variant={currentPage === i ? 'default' : 'outline'}
+            isActive={currentPage === i}
+          >
+            {i}
+          </PaginationButton>,
+        );
+      }
+    } else {
+      const leftEdge = 2;
+      const rightEdge = totalPages - 1;
+
+      pages.push(
+        <PaginationButton
+          key={1}
+          onClick={() => handlePageChange(1)}
+          variant={currentPage === 1 ? 'default' : 'outline'}
+          isActive={currentPage === 1}
+        >
+          1
+        </PaginationButton>,
+      );
+
+      if (currentPage > leftEdge + 1) {
+        pages.push(
+          <span key="ellipsis-left" className="ellipsis">
+            ...
+          </span>,
+        );
+        pages.push(
+          <PaginationButton
+            key={currentPage - 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            variant="outline"
+          >
+            {currentPage - 1}
+          </PaginationButton>,
+        );
+      }
+
+      if (currentPage !== 1 && currentPage !== totalPages) {
+        pages.push(
+          <PaginationButton
+            key={currentPage}
+            onClick={() => handlePageChange(currentPage)}
+            variant="default"
+            isActive
+          >
+            {currentPage}
+          </PaginationButton>,
+        );
+      }
+
+      if (currentPage < rightEdge - 1) {
+        pages.push(
+          <PaginationButton
+            key={currentPage + 1}
+            onClick={() => handlePageChange(currentPage + 1)}
+            variant="outline"
+          >
+            {currentPage + 1}
+          </PaginationButton>,
+        );
+        pages.push(
+          <span key="ellipsis-right" className="ellipsis">
+            ...
+          </span>,
+        );
+      }
+
+      pages.push(
+        <PaginationButton
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          variant={currentPage === totalPages ? 'default' : 'outline'}
+          isActive={currentPage === totalPages}
+        >
+          {totalPages}
+        </PaginationButton>,
+      );
+    }
+
+    return <div className="pagination">{pages}</div>;
   };
 
   const renderLoader = () => (
