@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, s
 from fastapi_cache import FastAPICache
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import settings
-from core.schemas.picture import PictureCreate, PictureRead
+from core.schemas.picture import PictureRead
 from core.models import db_helper
 from core.models.user import User
 from utils.authorization import get_current_user
@@ -56,6 +56,7 @@ async def delete_pictures_operation(
     db: get_async_db,
     pictures: list[str],
 ) -> dict[str, str]:
+    """Удаление изображений по их путям"""
     await FastAPICache.clear()
     try:
         await pictures_crud.delete_pictures(db, pictures)
