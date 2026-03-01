@@ -397,9 +397,9 @@ class TestDeletePictures:
         file1_path = f"{category_name}/{upload_date}/123.jpg"
         file2_path = f"{category_name}/{upload_date}/456.jpeg"
 
-        pics = await db.scalars(select(Picture))
+        res = await db.scalars(select(Picture))
 
-        pics = pics.all()
+        pics = res.all()
         print([pic.name for pic in pics] if pics else "No pictures in DB")
 
         await db.commit()

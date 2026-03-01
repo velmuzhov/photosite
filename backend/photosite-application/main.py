@@ -49,7 +49,6 @@ main_app.mount(
 )
 
 
-# исправить при деплое
 main_app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -90,18 +89,20 @@ async def log_requests(request: Request, call_next: Callable) -> Response:
         logger.exception(f"Error processing request: {str(e)}")
         raise
 
+
 @main_app.middleware("http")
 async def headers_control(request: Request, call_next: Callable) -> Response:
-    """Ограничивает max_age в cache_control 5 минутами, если это значение больше"""
-    print("Request Headers:")
-    print(request.headers)
-    
+    """Ограничивает max_age в cache_control значением max_age_maximum, если это значение больше"""
+
     response: Response = await call_next(request)
-    if "max-age" in (cache_control_header := response.headers.get("Cache-Control", "Empty")):
+    if "max-age" in (
+        cache_control_header := response.headers.get("Cache-Control", "Empty")
+    ):
         if int(cache_control_header.split("=")[-1]) > settings.cache.max_age_maximum:
-            response.headers["Cache-Control"] = f"max-age={settings.cache.max_age_maximum}"
-    
-    print(response.headers)
+            response.headers["Cache-Control"] = (
+                f"max-age={settings.cache.max_age_maximum}"
+            )
+
     return response
 
 
@@ -114,7 +115,7 @@ main_app.include_router(
 @main_app.get("/")
 async def work_check():
 
-    return {"message": "API is running... still What if I change it? And again?"}
+    return {"message": "API is running..."}
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-import os
 import logging.config
 
 from core.config import settings
@@ -69,9 +68,5 @@ def setup_logging(env="development"):
     #     }
     # )
 
-
-# env = os.getenv("ENVIRONMENT", "development")
-# print(env)
-# setup_logging(env)
 
 logger = logging.getLogger("app")
