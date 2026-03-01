@@ -1,11 +1,9 @@
-from typing import Annotated, Any
-import hashlib
-from collections.abc import Sequence, Callable
+from typing import Annotated
+from collections.abc import Sequence
 from fastapi import APIRouter, Depends, Form, Path, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_cache.decorator import cache
 from fastapi_cache import FastAPICache
-from fastapi.requests import Request
 
 
 from core.models import db_helper
@@ -22,6 +20,7 @@ from core.schemas.event import (
 from crud import events as events_crud
 
 from utils.authorization import get_current_user
+from utils.caching import events_key_builder
 
 router = APIRouter(
     prefix=settings.api.v1.events,
@@ -31,32 +30,6 @@ router = APIRouter(
 )
 
 get_async_db = Annotated[AsyncSession, Depends(db_helper.session_getter)]
-
-
-def events_key_builder(
-    func: Callable[..., Any],
-    namespace: str = "",
-    *,
-    request: Request | None = None,
-    response: Request | None = None,
-    args: tuple[Any, ...],
-    kwargs: dict[str, Any],
-) -> str:
-    """Кастомный создатель ключей в кеше, исключающий из аргументов конечной точки
-    экземпляр асинхронно сессии"""
-    custom_kwargs = {
-        key: value
-        for key, value in kwargs.items()
-        if not isinstance(value, AsyncSession)
-    }
-
-    print(args)
-    print(custom_kwargs)
-
-    cache_key = hashlib.md5(
-        f"{func.__module__}:{func.__name__}:{args}:{custom_kwargs}".encode()
-    ).hexdigest()
-    return f"{namespace}:{cache_key}"
 
 
 @router.get("/cache_reset")
@@ -99,7 +72,7 @@ async def get_events_with_category(
 ) -> dict[str, int | Sequence[Event]]:
     """
     Функция операции для получения всех съемок из данной категории
-    в обратном хронологическом порядке. Возвращает словарь с полным
+    в обратном хронологическом порядке. Возвращает объект с полным
     количеством записей для пагинации и последовательностью из
     экземпляров orm-модели Event.
     """
@@ -174,8 +147,10 @@ async def add_pictures(
     files: Annotated[list[UploadFile], File()],
 ) -> list[str]:
     """Конечная точка для добавления фотографий к существующей съемке.
-    Категория и дата съемки поступают не через форму, а как параметры пути. Файлы поступают через форму и должны быть валидированы
-    схемой EventUpdate. На этот маршрут должен отправляться запрос на фронтенде при нажатии кнопки.
+    Категория и дата съемки поступают не через форму, а как параметры пути.
+    Файлы поступают через форму и должны быть валидированы
+    схемой EventUpdate. На этот маршрут должен отправляться запрос на фронтенде
+    при нажатии кнопки.
     """
     await FastAPICache.clear()
 
