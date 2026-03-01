@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 from typing import Annotated
-import aiofiles
-from datetime import datetime, date as dt_date
+from datetime import date as dt_date
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models.picture import Picture
@@ -11,7 +10,6 @@ from core.config import settings
 from utils.pictures import (
     check_file_names,
     create_event,
-    save_file_to_db,
     write_one_file_on_disc,
     save_multiple_files_to_event,
 )
@@ -31,7 +29,10 @@ async def upload_pictures(
     event_cover: Annotated[UploadFile, Form()],
     event_description: Annotated[str | None, Form()] = None,
 ) -> list[str]:
-    """Функция для загрузки нескольких изображений"""
+    """Функция для загрузки нескольких изображений. Создает также объект
+    Event, к которому относятся изображения. Должна оставаться единственным
+    способом создать объект Event, чтобы не допустить создание объекта Event
+    изначально без изображений"""
 
     files = list(set(files))
 
@@ -117,5 +118,7 @@ async def delete_pictures(
             file_path.unlink(missing_ok=True)
             thumbnail_path.unlink(missing_ok=True)
         except Exception as e:
-            # залогировать
-            print(f"Ошибка при удалении {file_path}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Не удалось удалить файлы, ошибка: {e}",
+            )

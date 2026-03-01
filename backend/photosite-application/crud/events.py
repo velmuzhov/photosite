@@ -1,12 +1,10 @@
-import pathlib
-from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated
 from collections.abc import Sequence
 import shutil
 from sqlalchemy import select, func
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Form, HTTPException, status, Depends, Path, File, UploadFile
+from fastapi import Form, HTTPException, status, Path, File, UploadFile
 
 from core.config import settings
 from core.models.event import Event
@@ -16,7 +14,6 @@ from utils.general import check_date, move_files
 from utils.pictures import (
     check_file_names,
     write_one_file_on_disc,
-    save_file_to_db,
     save_multiple_files_to_event,
     check_file_name,
 )
@@ -391,6 +388,9 @@ async def get_inactive_events(
     db: AsyncSession,
 ) -> Sequence[Event]:
     """Возвращает список неактивных съемок из всех категорий"""
-    result = await db.scalars(select(Event).options(selectinload(Event.category)).filter(Event.active.is_(False)))
-    # print([e.category for e in result.all()])
+    result = await db.scalars(
+        select(Event)
+        .options(selectinload(Event.category))
+        .filter(Event.active.is_(False))
+    )
     return result.all()
