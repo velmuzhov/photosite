@@ -73,9 +73,10 @@ docs/_build/
 target/
 
 # Virtual environment
-.env
-.venv/
-venv/
+**/.env
+**/.env.template
+**/.venv/
+**/venv/
 
 # PyCharm
 .idea
@@ -92,3 +93,12 @@ venv/
 
 **/*.jpg
 **/*.jpeg
+
+photosite-application/tests/
+photosite-application/.mypy_cache/
+photosite-application/**/.mypy_cache/
+photosite-application/__pycache__/
+photosite-application/**/__pycache__/
+photosite-application/test_static/
+photosite-application/**/*.log
+photosite-application/static/

@@ -1,0 +1,66 @@
+services:
+  # Фронтенд + nginx (точка входа для пользователей)
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - photosite_pictures:/app/static
+    networks:
+      - photosite_network
+    depends_on:
+      - api
+
+
+  # Бекенд FastAPI
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend/photosite-application/.env:/app/.env:ro
+      - photosite_pictures:/app/static
+    # Порт 9000 только внутри сети, наружу не пробрасываем
+    networks:
+      - photosite_network
+    depends_on:
+      - pg
+      - redis
+
+
+  # База данных PostgreSQL
+  pg:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - photosite_network
+    volumes:
+      - photosite_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Redis для кэширования
+  redis:
+    image: "redis:alpine"
+    networks:
+      - photosite_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  photosite_data:
+  photosite_pictures:
+
+networks:
+  photosite_network:
