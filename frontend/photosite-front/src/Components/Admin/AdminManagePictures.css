@@ -24,8 +24,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-state {
@@ -139,11 +143,16 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  opacity: 0; /* Начинаем с невидимого изображения */
+  transition:
+    opacity 0.5s ease,
+    transform 0.3s ease;
+  z-index: 2;
+  display: block; /* Устраняет лишний отступ под изображением */
 }
 
-.gallery-item:hover .gallery-image {
-  transform: scale(1.05);
+.gallery-image.loaded {
+  opacity: 1; /* Показываем после загрузки */
 }
 
 /* Чекбокс для удаления */
@@ -212,12 +221,12 @@
     padding: 0 var(--spacing-xs);
     gap: var(--spacing-xxs);
   }
-  
+
   .action-buttons {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .btn {
     width: 100%;
     justify-content: center;

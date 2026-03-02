@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './AdminManagePictures.css';
 import { getEventPicturesForAdmin, deletePictures } from '../../services/api';
@@ -11,6 +11,14 @@ const AdminManagePictures = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  // Добавляем новые состояния и реф
+  const [loadedImages, setLoadedImages] = useState(new Set());
+  const imageRefs = useRef({});
+
+  // Обработчик загрузки изображения
+  const handleImageLoad = (imageId) => {
+    setLoadedImages(prev => new Set(prev).add(imageId));
+  };
 
   // Загрузка данных съёмки
   useEffect(() => {
@@ -30,6 +38,13 @@ const AdminManagePictures = () => {
     };
     fetchEvent();
   }, [category, date]);
+
+  // Очистка памяти при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      imageRefs.current = {};
+    };
+  }, []);
 
   // Обработчик выбора фотографий
   const handlePictureSelect = (picturePath) => {
@@ -128,7 +143,6 @@ const AdminManagePictures = () => {
         >
           Удалить выбранные ({selectedPictures.length})
         </button>
-
         {selectedPictures.length > 0 && (
           <button
             onClick={handleClearSelection}
@@ -141,27 +155,40 @@ const AdminManagePictures = () => {
       </div>
 
       <div className="gallery-grid">
-        {event.pictures?.map((img) => (
-          <div key={img.path} className="gallery-item ratio-5-4 position-relative">
-            <input
-              type="checkbox"
-              checked={selectedPictures.includes(img.path)}
-              onChange={() => handlePictureSelect(img.path)}
-              className="delete-checkbox"
-              aria-label={`Выбрать фото ${img.path} для удаления`}
-            />
-            <img
-              src={`${import.meta.env.VITE_BASE_THUMBNAILS_PICTURES_URL}/${img.path}`}
-              alt={`Фото ${img.path}`}
-              className="gallery-image"
-              loading="lazy"
-              onError={(e) => {
-                e.target.src = '/images/placeholder.jpg';
-                e.target.alt = 'Изображение недоступно';
-              }}
-            />
-          </div>
-        ))}
+        {event.pictures?.map((img, index) => {
+          const imageId = `image-${index}`;
+
+          return (
+            <div key={img.path} className="gallery-item ratio-5-4 position-relative">
+              <input
+                type="checkbox"
+                checked={selectedPictures.includes(img.path)}
+                onChange={() => handlePictureSelect(img.path)}
+                className="delete-checkbox"
+                aria-label={`Выбрать фото ${img.path} для удаления`}
+              />
+              <img
+                ref={(el) => { imageRefs.current[imageId] = el; }}
+                src={`${import.meta.env.VITE_BASE_THUMBNAILS_PICTURES_URL}/${img.path}`}
+                alt={`Фото ${img.path}`}
+                className={`gallery-image ${loadedImages.has(imageId) ? 'loaded' : ''}`}
+                loading="lazy"
+                onLoad={() => handleImageLoad(imageId)}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  const parent = e.target.parentElement;
+                  parent.style.background = '#e0e0e0';
+                  parent.textContent = 'Ошибка загрузки';
+                  parent.style.color = '#666';
+                  parent.style.display = 'flex';
+                  parent.style.justifyContent = 'center';
+                  parent.style.alignItems = 'center';
+                  parent.style.fontSize = '14px';
+                }}
+              />
+            </div>
+          );
+        })}
       </div>
 
       <div className="action-buttons mt-4">
