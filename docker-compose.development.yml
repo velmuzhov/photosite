@@ -27,7 +27,7 @@ services:
     ports:
       - '5500:5432'
     volumes:
-      - photosite_data:/var/lib/postgresql/data
+      - dev_photosite_data:/var/lib/postgresql/data
 
   adminer:
     image: adminer
@@ -46,5 +46,5 @@ services:
     
 
 volumes:
-  photosite_data:
+  dev_photosite_data:
   # redis-data:
