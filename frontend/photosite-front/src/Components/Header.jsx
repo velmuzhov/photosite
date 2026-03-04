@@ -39,93 +39,100 @@ const Header = () => {
 
   return (
     <header className="header fixed-top w-100 bg-white shadow">
-      <div className="container d-flex justify-between align-items-center p-3">
-        <div className="header__logo">
-          <Link to="/" className="nav-link" onClick={handleMenuItemClick}>
-            Velmuzhov
-          </Link>
-        </div>
+      <div className="header__inner" style={{ position: 'relative' }}>
+        <div className="container d-flex justify-between align-items-center p-3">
+          <div className="header__logo">
+            <Link to="/" className="nav-link" onClick={handleMenuItemClick}>
+              Velmuzhov
+            </Link>
+          </div>
 
-        <button
-          className="burger-btn d-md-none"
-          onClick={toggleMenu}
-          aria-label="Открыть меню"
-        >
-          ☰
-        </button>
-
-        <nav className={`header__nav ${isMenuOpen ? 'show' : ''}`}>
-          <ul className="nav-list">
-            <li className="nav-item">
-              <Link
-                to="/wedding"
-                className={`nav-link ${location.pathname === '/wedding' ? 'active' : ''}`}
-                onClick={handleMenuItemClick}
-              >
-                Свадьбы
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
-                to="/portrait"
-                className={`nav-link ${location.pathname === '/portrait' ? 'active' : ''}`}
-                onClick={handleMenuItemClick}
-              >
-                Портреты
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
-                to="/family"
-                className={`nav-link ${location.pathname === '/family' ? 'active' : ''}`}
-                onClick={handleMenuItemClick}
-              >
-                Семьи
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
-                to="/blog"
-                className={`nav-link ${location.pathname === '/blog' ? 'active' : ''}`}
-                onClick={handleMenuItemClick}
-              >
-                Блог
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
-                to="/about"
-                className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
-                onClick={handleMenuItemClick}
-              >
-                Обо мне
-              </Link>
-            </li>
-
-            {isAuthenticated && (
-              <>
-                <li className="nav-item">
-                  <Link
-                    to="/admin"
-            className={`nav-link text-success ${location.pathname === '/admin' ? 'active' : ''}`}
-            onClick={handleMenuItemClick}
-          >
-            Админка
-          </Link>
-        </li>
-        <li className="nav-item">
           <button
-            onClick={handleLogout}
-            className="nav-btn"
-            aria-label="Выход из аккаунта"
+            className="burger-btn d-md-none"
+            onClick={toggleMenu}
+            aria-label="Открыть меню"
           >
-            Выход
+            ☰
           </button>
-        </li>
-      </>
-    )}
-  </ul>
-</nav>
+
+          <nav className={`header__nav ${isMenuOpen ? 'show' : ''}`}>
+            <ul className="nav-list">
+              <li className="nav-item">
+                <Link to="/" className="nav-link" onClick={handleMenuItemClick}>
+                  Главная
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  to="/wedding"
+                  className={`nav-link ${location.pathname === '/wedding' ? 'active' : ''}`}
+                  onClick={handleMenuItemClick}
+                >
+                  Свадьбы
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  to="/portrait"
+                  className={`nav-link ${location.pathname === '/portrait' ? 'active' : ''}`}
+                  onClick={handleMenuItemClick}
+                >
+                  Портреты
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  to="/family"
+                  className={`nav-link ${location.pathname === '/family' ? 'active' : ''}`}
+                  onClick={handleMenuItemClick}
+                >
+                  Семьи
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  to="/blog"
+                  className={`nav-link ${location.pathname === '/blog' ? 'active' : ''}`}
+                  onClick={handleMenuItemClick}
+                >
+                  Блог
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  to="/about"
+                  className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
+                  onClick={handleMenuItemClick}
+                >
+                  Обо мне
+                </Link>
+              </li>
+
+              {isAuthenticated && (
+                <>
+                  <li className="nav-item">
+                    <Link
+                      to="/admin"
+                      className={`nav-link text-success ${location.pathname === '/admin' ? 'active' : ''}`}
+                      onClick={handleMenuItemClick}
+                    >
+                      Админка
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      onClick={handleLogout}
+                      className="nav-btn"
+                      aria-label="Выход из аккаунта"
+                    >
+                      Выход
+                    </button>
+                  </li>
+                </>
+              )}
+            </ul>
+          </nav>
+        </div>
       </div>
     </header>
   );

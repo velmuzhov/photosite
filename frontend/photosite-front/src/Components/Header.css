@@ -35,10 +35,14 @@
 }
 
 /* Основное меню */
+.header__inner {
+  position: relative;
+}
+
 .header__nav {
   display: none;
-  position: fixed;
-  top: 70px;
+  position: absolute; /* Относительно .header__inner */
+  top: 100%; /* Сразу под родителем */
   left: 0;
   right: 0;
   background-color: var(--color-bg);
@@ -46,10 +50,16 @@
   box-shadow: var(--shadow);
   z-index: 999;
   overflow-y: auto;
-  max-height: calc(100vh - 70px);
+  max-height: calc(100vh - 100%); /* Занимает оставшееся пространство */
   opacity: 0;
   transform: translateY(-10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.header__nav.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @media (min-width: 768px) {
@@ -65,12 +75,6 @@
     transform: translateY(0);
     transition: none; /* Отключаем анимацию на десктопе */
   }
-}
-
-.header__nav.show {
-  display: block;
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* Список меню */
