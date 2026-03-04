@@ -11,25 +11,23 @@ const Lightbox = ({ imageSrc, onClose }) => {
   const [lastScale, setLastScale] = useState(1);
   const [pinchCenter, setPinchCenter] = useState({ x: 0, y: 0 });
   const [isResetting, setIsResetting] = useState(false);
-  // Сохраняем позицию прокрутки при открытии
-  const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    // Сохраняем позицию прокрутки *перед* блокировкой
+    const savedScrollPosition = {
+      x: window.pageXOffset,
+      y: window.pageYOffset
+    };
+
     const meta = document.querySelector('meta[name="viewport"]');
     if (meta) {
       meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
     }
 
-    // Сохраняем текущую позицию прокрутки перед блокировкой
-    setScrollPosition({
-      x: window.pageXOffset || document.documentElement.scrollLeft,
-      y: window.pageYOffset || document.documentElement.scrollTop
-    });
-
     // Блокировка скролла страницы БЕЗ сброса позиции
     document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollPosition.y}px`;
-    document.body.style.left = `-${scrollPosition.x}px`;
+    document.body.style.top = `-${savedScrollPosition.y}px`;
+    document.body.style.left = `-${savedScrollPosition.x}px`;
     document.body.style.width = '100%';
 
     const handleKeyDown = (e) => {
@@ -47,14 +45,14 @@ const Lightbox = ({ imageSrc, onClose }) => {
       document.body.style.left = '';
 
       // Возвращаем страницу на прежнюю позицию прокрутки
-      window.scrollTo(scrollPosition.x, scrollPosition.y);
+      window.scrollTo(savedScrollPosition.x, savedScrollPosition.y);
 
       if (meta) {
         meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
       }
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose, scrollPosition]);
+  }, [onClose]); // Убираем scrollPosition из зависимостей
 
   // Вычисление расстояния между точками касания
   const getDistance = (touch1, touch2) => {
