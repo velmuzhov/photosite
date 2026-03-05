@@ -22,9 +22,6 @@ def events_key_builder(
         if not isinstance(value, AsyncSession)
     }
 
-    print(args)
-    print(custom_kwargs)
-
     cache_key = hashlib.md5(
         f"{func.__module__}:{func.__name__}:{args}:{custom_kwargs}".encode()
     ).hexdigest()

@@ -46,7 +46,6 @@ async def upload_pictures(
 
     category_dir = settings.static.image_dir / category
     thumbnails_category_dir = settings.static.thumbnails_dir / category
-    print(category_dir)
     date_dir = category_dir / date
     thumbnails_date_dir = thumbnails_category_dir / date
     date_dir.mkdir(parents=True, exist_ok=True)

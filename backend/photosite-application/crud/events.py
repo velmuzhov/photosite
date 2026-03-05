@@ -108,7 +108,6 @@ async def delete_event(
 
     dir_to_remove = settings.static.image_dir / category / date
     thumbnail_dir_to_remove = settings.static.thumbnails_dir / category / date
-    print(thumbnail_dir_to_remove)
     dir_with_cover_to_remove = settings.static.covers_dir / category / date
 
     if dir_to_remove.exists() and dir_to_remove.is_dir():
