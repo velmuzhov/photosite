@@ -136,6 +136,7 @@ const EventPage = () => {
                   className={`gallery-image ${loadedImages.has(imageId) ? 'loaded' : ''}`}
                   loading="lazy"
                   onLoad={() => handleImageLoad(imageId)}
+                  onContextMenu={(e) => e.preventDefault()}
                   onError={(e) => {
                     e.target.style.display = 'none';
             const parent = e.target.parentElement;

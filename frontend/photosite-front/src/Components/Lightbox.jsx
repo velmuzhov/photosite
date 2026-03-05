@@ -191,6 +191,7 @@ const Lightbox = ({ imageSrc, onClose }) => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onContextMenu={(e) => e.preventDefault()}
         style={{
           transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
           transformOrigin: 'center center',

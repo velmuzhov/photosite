@@ -15,6 +15,7 @@ const EventCard = ({ event, category }) => {
           alt={event.description || 'Обложка съёмки'}
           className="event-card__image"
           loading="lazy"
+          // onContextMenu={(e) => e.preventDefault()}
         />
       </div>
 
