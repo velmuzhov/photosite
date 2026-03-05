@@ -118,10 +118,10 @@ async def work_check():
     return {"message": "API is running..."}
 
 
-if __name__ == "__main__":
-    uvicorn.run(
-        app="main:main_app",
-        host=settings.run.host,
-        port=settings.run.port,
-        reload=True,
-    )
+# if __name__ == "__main__":
+#     uvicorn.run(
+#         app="main:main_app",
+#         host=settings.run.host,
+#         port=settings.run.port,
+#         reload=True,
+#     )

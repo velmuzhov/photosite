@@ -104,7 +104,7 @@ const Header = () => {
                   className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
                   onClick={handleMenuItemClick}
                 >
-                  Обо мне
+                  Контакты
                 </Link>
               </li>
 

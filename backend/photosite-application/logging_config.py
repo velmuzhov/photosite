@@ -41,8 +41,14 @@ def setup_logging(env="development"):
                 "level": "INFO",
                 "propagate": False,
             },
-            "watchfiles": {
-                "level": "WARNING",
+            "gunicorn.access": {
+                "handlers": ["file", "console"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "gunicorn.error": {
+                "handlers": ["file", "console"],
+                "level": "ERROR",
                 "propagate": False,
             },
         },
@@ -55,18 +61,5 @@ def setup_logging(env="development"):
         log_config["handlers"]["console"]["level"] = "DEBUG"
 
     logging.config.dictConfig(log_config)
-
-    # настройка логирования uvicorn и sqlalchemy
-    # logging.config.dictConfig(
-    #     {
-    #         "version": 1,
-    #         "disable_existing_loggers": False,
-    #         "loggers": {
-    #             "uvicorn": {"level": "INFO", "propagate": True},
-    #             "sqlalchemy": {"level": "INFO", "propagate": True},
-    #         },
-    #     }
-    # )
-
 
 logger = logging.getLogger("app")
