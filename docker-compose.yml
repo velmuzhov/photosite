@@ -74,3 +74,5 @@ volumes:
 
 networks:
   photosite_network:
+
+  
