@@ -55,7 +55,7 @@ main_app.add_middleware(
         "https://velmuzhov.ru",
         "http://velmuzhov.ru",
     ],
-    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_credentials=True,
     allow_headers=["*"],
     expose_headers=["*"],
