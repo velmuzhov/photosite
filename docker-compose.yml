@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend/photosite-application/.env:/app/.env:ro
-      - ./apilogs/:/app/logs/
+      # - ./apilogs/:/app/logs/
       - photosite_pictures:/app/static
     networks:
       - photosite_network
