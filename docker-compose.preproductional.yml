@@ -21,8 +21,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend/photosite-application/.env:/app/.env:ro
+      - ./backend/photosite-application/logs/:/app/logs/
       - photosite_pictures:/app/static
-    # Порт 9000 только внутри сети, наружу не пробрасываем
     networks:
       - photosite_network
     depends_on:

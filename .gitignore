@@ -244,3 +244,5 @@ dist-ssr
 *.njsproj
 *.sln
 Запросы/
+
+local.nginx.conf

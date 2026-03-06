@@ -1,5 +1,4 @@
 from core.config import settings
-from logging_config import setup_logging
 
 workers = 4
 

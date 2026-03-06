@@ -102,3 +102,5 @@ photosite-application/**/__pycache__/
 photosite-application/test_static/
 photosite-application/**/*.log
 photosite-application/static/
+
+**/app.log*

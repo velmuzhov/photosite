@@ -42,20 +42,22 @@ main_app = FastAPI(
     docs_url="/docs" if settings.environment == "development" else None,
 )
 
-main_app.mount(
-    "/static",
-    StaticFiles(directory="static"),
-    name="static",
-)
+# main_app.mount(
+#     "/static",
+#     StaticFiles(directory="static"),
+#     name="static",
+# )
 
 
 main_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=[
+        "https://velmuzhov.ru",
+        "http://velmuzhov.ru",
+    ],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_credentials=True,
     allow_headers=["*"],
-    # expose_headers=["x-total-count", "x-fastapi-cache"],
     expose_headers=["*"],
 )
 
