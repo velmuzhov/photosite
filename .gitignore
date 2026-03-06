@@ -246,3 +246,4 @@ dist-ssr
 Запросы/
 
 local.nginx.conf
+bad.nginx.conf
