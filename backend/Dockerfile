@@ -17,17 +17,18 @@ COPY photosite-application/ ./src/
 
 FROM python:3.13-slim AS runtime
 
+# Удаляем создание пользователя и группы — работаем от root по умолчанию
+# RUN groupadd -g 1000 worker && \
+#    useradd -u 1000 -g worker -d /app -s /bin/sh worker
 
-RUN groupadd -g 1000 worker && \
-    useradd -u 1000 -g worker -d /app -s /bin/sh worker
-
-USER worker
+# Не переключаемся на непривилегированного пользователя
+# USER worker
 
 WORKDIR /app
 
-COPY --from=builder --chown=worker:worker /app/.venv /app/.venv
-
-COPY --from=builder --chown=worker:worker /app/src/ ./
+# Копируем зависимости и код без смены владельца (остаются owned by root)
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/src/ ./
 
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH="/app"
