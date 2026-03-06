@@ -1,35 +1,75 @@
 services:
+  # Фронтенд + nginx (точка входа для пользователей)
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '80:80'
+    volumes:
+      - photosite_pictures:/app/static
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - photosite_network
+    depends_on:
+      - api
+
+  # Бекенд FastAPI
   api:
     build:
-      context: ./backend/
+      context: ./backend
       dockerfile: Dockerfile
-
     volumes:
       - ./backend/photosite-application/.env:/app/.env:ro
-      # Добавил, чтобы статика не копировалась в образ, но лежала на сервере и была доступна в приложении:
-      - ./backend/photosite-application/static/:/app/static/
-    ports:
-      - "9000:8000"
+      - ./backend/photosite-application/logs/:/app/logs/
+      - photosite_pictures:/app/static
+    networks:
+      - photosite_network
     depends_on:
       - pg
       - redis
-    
+
+  # База данных PostgreSQL
   pg:
     image: postgres:17-alpine
-
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-
+    networks:
+      - photosite_network
     volumes:
       - photosite_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $POSTGRES_USER -d $POSTGRES_DB']
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
-
+  # Redis для кэширования
   redis:
-    image: "redis:alpine"
-    
+    image: 'redis:alpine'
+    networks:
+      - photosite_network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot/ --email thom52@yandex.ru --agree-tos --no-eff-email -d velmuzhov.ru
+    depends_on:
+      - nginx
 
 volumes:
   photosite_data:
+  photosite_pictures:
 
+networks:
+  photosite_network:
