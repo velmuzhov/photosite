@@ -15,7 +15,6 @@ services:
       - photosite_network
     depends_on:
       - api
-    user: "1000:1000"
 
   # Бекенд FastAPI
   api:
