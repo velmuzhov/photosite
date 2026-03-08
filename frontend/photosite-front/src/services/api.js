@@ -280,7 +280,7 @@ export const getEventPicturesForAdmin = async (category, date) => {
 // Удаляем выбранные фотографии
 export const deletePictures = async (picturePaths) => {
   try {
-    const response = await apiAuthClient.delete('/pictures', {
+    const response = await apiAuthClient.delete('/pictures/', {
       data: picturePaths,
     });
     return response.data;
