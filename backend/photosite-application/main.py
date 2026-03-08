@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+
 from redis import asyncio as aioredis
 
 from api import router as api_router
@@ -40,6 +41,7 @@ main_app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
     docs_url="/docs" if settings.environment == "development" else None,
+    trusted_hosts=["velmuzhov.ru"],
 )
 
 # main_app.mount(
