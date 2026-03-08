@@ -55,12 +55,11 @@ async def delete_pictures_operation(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
     pictures: list[str],
-) -> dict[str, str]:
+) -> None:
     """Удаление изображений по их путям"""
     await FastAPICache.clear()
     try:
         await pictures_crud.delete_pictures(db, pictures)
-        return {"message": f"Изображения удалены"}
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
