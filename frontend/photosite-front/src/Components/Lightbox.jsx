@@ -12,24 +12,8 @@ const Lightbox = ({ imageSrc, onClose }) => {
   const [pinchCenter, setPinchCenter] = useState({ x: 0, y: 0 });
   const [isResetting, setIsResetting] = useState(false);
 
+  // Обработчик нажатия Escape
   useEffect(() => {
-    // Сохраняем позицию прокрутки *перед* блокировкой
-    const savedScrollPosition = {
-      x: window.pageXOffset,
-      y: window.pageYOffset
-    };
-
-    const meta = document.querySelector('meta[name="viewport"]');
-    if (meta) {
-      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-    }
-
-    // Блокировка скролла страницы БЕЗ сброса позиции
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${savedScrollPosition.y}px`;
-    document.body.style.left = `-${savedScrollPosition.x}px`;
-    document.body.style.width = '100%';
-
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         onClose();
@@ -37,22 +21,8 @@ const Lightbox = ({ imageSrc, onClose }) => {
     };
 
     document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      // Восстановление скролла С СОХРАНЕНИЕМ ПОЗИЦИИ
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-
-      // Возвращаем страницу на прежнюю позицию прокрутки
-      window.scrollTo(savedScrollPosition.x, savedScrollPosition.y);
-
-      if (meta) {
-        meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-      }
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose]); // Убираем scrollPosition из зависимостей
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   // Вычисление расстояния между точками касания
   const getDistance = (touch1, touch2) => {
@@ -168,7 +138,6 @@ const Lightbox = ({ imageSrc, onClose }) => {
       role="dialog"
       aria-modal="true"
       tabIndex={-1}
-      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
       ref={containerRef}
     >
       <button

@@ -14,6 +14,8 @@ const EventPage = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [loadedImages, setLoadedImages] = useState(new Set());
   const imageRefs = useRef({});
+  const savedScrollPosition = useRef({ x: 0, y: 0 }); // Сохраняем позицию прокрутки
+  const isHandlingPopstate = useRef(false); // Флаг для защиты от рекурсии
 
   // Загрузка данных события
   useEffect(() => {
@@ -35,19 +37,43 @@ const EventPage = () => {
     setLoadedImages(prev => new Set(prev).add(imageId));
   };
 
-  // Открытие лайтбокса — исправленная версия
+  // Открытие лайтбокса с сохранением позиции прокрутки
   const openLightbox = (imgPath) => {
+    console.log('Открываем лайтбокс с изображением:', imgPath);
+    // Сохраняем текущую позицию прокрутки перед блокировкой
+    savedScrollPosition.current = {
+      x: window.pageXOffset,
+      y: window.pageYOffset
+    };
+
     setCurrentImageSrc(
       `${import.meta.env.VITE_BASE_FULLSIZE_PICTURES_URL}/${imgPath}`
     );
     setIsLightboxOpen(true);
-    document.body.style.overflow = 'hidden';
+
+    // Блокируем скролл
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${savedScrollPosition.current.y}px`;
+    document.body.style.left = `-${savedScrollPosition.current.x}px`;
+    document.body.style.width = '100%';
+
+    // Добавляем запись в историю с флагом лайтбокса
+    window.history.pushState({ isLightbox: true }, '', window.location.href);
   };
 
-  // Закрытие лайтбокса
+  // Закрытие лайтбокса с восстановлением позиции
   const closeLightbox = () => {
+    console.log('Закрываем лайтбокс');
     setIsLightboxOpen(false);
-    document.body.style.overflow = '';
+    // Восстанавливаем скролл и позицию
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    window.scrollTo(savedScrollPosition.current.x, savedScrollPosition.current.y);
+
+    // Заменяем текущую запись истории без флага лайтбокса
+    window.history.replaceState({}, '', window.location.href);
+    console.log('Лайтбокс закрыт, скролл восстановлен');
   };
 
   // Плавный скролл наверх
@@ -62,12 +88,45 @@ const EventPage = () => {
   useEffect(() => {
     const handleScroll = () => setShowBackToTop(window.pageYOffset > 200);
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Проверка при загрузке
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Перехват кнопки «Назад» при открытом лайтбоксе
   useEffect(() => {
-    // Очищаем память при размонтировании
+    if (!isLightboxOpen) return;
+
+    const handlePopState = (event) => {
+      console.log('Сработало событие popstate при открытом лайтбоксе');
+      if (isHandlingPopstate.current) return;
+
+      isHandlingPopstate.current = true;
+      event.preventDefault();
+      closeLightbox();
+
+      setTimeout(() => {
+        isHandlingPopstate.current = false;
+      }, 100); // Сброс флага через 100 мс
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isLightboxOpen]);
+
+  // Обработка Escape
+  useEffect(() => {
+    if (isLightboxOpen) {
+      const handleKeyDown = (event) => {
+        if (event.key === 'Escape') {
+          closeLightbox();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isLightboxOpen]);
+
+  useEffect(() => {
     return () => {
       imageRefs.current = {};
     };
@@ -160,7 +219,7 @@ const EventPage = () => {
             to={`/${category}`}
             className="btn btn-secondary"
           >
-            ← К{' '}
+                      ← К{' '}
             {category === 'wedding'
               ? 'свадьбам'
               : category === 'portrait'
