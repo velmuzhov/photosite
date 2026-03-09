@@ -43,19 +43,24 @@ main_app = FastAPI(
     docs_url="/docs" if settings.environment == "development" else None,
 )
 
-# main_app.mount(
-#     "/static",
-#     StaticFiles(directory="static"),
-#     name="static",
-# )
+if settings.environment == "development":
+    main_app.mount(
+        "/static",
+        StaticFiles(directory="static"),
+        name="static",
+    )
 
 
 main_app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://velmuzhov.ru",
-        "http://velmuzhov.ru",
-    ],
+    allow_origins=(
+        ["*"]
+        if settings.environment == "development"
+        else [
+            "https://velmuzhov.ru",
+            "http://velmuzhov.ru",
+        ]
+    ),
     allow_methods=["*"],
     allow_credentials=True,
     allow_headers=["*"],

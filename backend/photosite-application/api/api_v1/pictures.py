@@ -20,7 +20,7 @@ router = APIRouter(
 get_async_db = Annotated[AsyncSession, Depends(db_helper.session_getter)]
 
 
-@router.get("/", response_model=list[PictureRead])
+@router.get("", response_model=list[PictureRead])
 async def get_all_pictures_sorted_by_id(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
@@ -29,7 +29,7 @@ async def get_all_pictures_sorted_by_id(
     return await pictures_crud.get_all_pictures(db)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def upload_pictures_operation(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
@@ -50,7 +50,7 @@ async def upload_pictures_operation(
     )
 
 
-@router.delete("/", status_code=status.HTTP_200_OK)
+@router.delete("", status_code=status.HTTP_200_OK)
 async def delete_pictures_operation(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,

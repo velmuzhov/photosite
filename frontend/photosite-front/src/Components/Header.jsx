@@ -43,7 +43,7 @@ const Header = () => {
         <div className="container d-flex justify-between align-items-center p-3">
           <div className="header__logo">
             <Link to="/" className="nav-link" onClick={handleMenuItemClick}>
-              Velmuzhov
+              velmuzhov.ru
             </Link>
           </div>
 

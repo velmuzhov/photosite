@@ -223,7 +223,7 @@ async def delete_event_operation(
     return {"message": f"Съемка {date} из категории {category} удалена"}
 
 
-@router.get("/")
+@router.get("")
 async def get_all_events(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,

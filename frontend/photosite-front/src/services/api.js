@@ -231,7 +231,7 @@ export const login = async (username, password) => {
 // Функция для создания новой съёмки
 export const createShoot = async (formData) => {
   try {
-    const response = await apiFormFileClient.post('/pictures/', formData);
+    const response = await apiFormFileClient.post('/pictures', formData);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -280,7 +280,7 @@ export const getEventPicturesForAdmin = async (category, date) => {
 // Удаляем выбранные фотографии
 export const deletePictures = async (picturePaths) => {
   try {
-    const response = await apiAuthClient.delete('/pictures/', {
+    const response = await apiAuthClient.delete('/pictures', {
       data: picturePaths,
     });
     return response.data;
