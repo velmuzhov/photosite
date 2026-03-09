@@ -1,6 +1,6 @@
 from typing import Annotated
 from collections.abc import Sequence
-from fastapi import APIRouter, Depends, Form, Path, Query, UploadFile, File
+from fastapi import APIRouter, Depends, Form, Path, Query, UploadFile, File, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_cache.decorator import cache
 from fastapi_cache import FastAPICache
@@ -208,7 +208,10 @@ async def change_active_status_of_event(
     return await events_crud.toggle_event_active_status(db, category, date)
 
 
-@router.delete("/{category}/{date}")
+@router.delete(
+    "/{category}/{date}",
+    status_code=status.HTTP_200_OK,
+)
 async def delete_event_operation(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,
@@ -233,7 +236,11 @@ async def get_all_events(
     return await events_crud.get_events_by_date_created(db, limit)
 
 
-@router.delete("/{category}/{date}/description", response_model=EventReadNoPictures)
+@router.delete(
+    "/{category}/{date}/description",
+    response_model=EventReadNoPictures,
+    status_code=status.HTTP_200_OK,
+)
 async def delete_description_of_event(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,

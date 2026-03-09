@@ -50,7 +50,7 @@ async def upload_pictures_operation(
     )
 
 
-@router.delete("", status_code=status.HTTP_200_OK)
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_pictures_operation(
     user: Annotated[User, Depends(get_current_user)],
     db: get_async_db,

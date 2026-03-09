@@ -39,7 +39,6 @@ const EventPage = () => {
 
   // Открытие лайтбокса с сохранением позиции прокрутки
   const openLightbox = (imgPath) => {
-    console.log('Открываем лайтбокс с изображением:', imgPath);
     // Сохраняем текущую позицию прокрутки перед блокировкой
     savedScrollPosition.current = {
       x: window.pageXOffset,
@@ -63,7 +62,6 @@ const EventPage = () => {
 
   // Закрытие лайтбокса с восстановлением позиции
   const closeLightbox = () => {
-    console.log('Закрываем лайтбокс');
     setIsLightboxOpen(false);
     // Восстанавливаем скролл и позицию
     document.body.style.position = '';
@@ -73,7 +71,6 @@ const EventPage = () => {
 
     // Заменяем текущую запись истории без флага лайтбокса
     window.history.replaceState({}, '', window.location.href);
-    console.log('Лайтбокс закрыт, скролл восстановлен');
   };
 
   // Плавный скролл наверх
@@ -97,7 +94,6 @@ const EventPage = () => {
     if (!isLightboxOpen) return;
 
     const handlePopState = (event) => {
-      console.log('Сработало событие popstate при открытом лайтбоксе');
       if (isHandlingPopstate.current) return;
 
       isHandlingPopstate.current = true;
