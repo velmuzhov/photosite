@@ -61,7 +61,8 @@ const EventPage = () => {
   };
 
   // Закрытие лайтбокса с восстановлением позиции
-  const closeLightbox = () => {
+  // с помощью кнопки Назад
+  const closeLightboxBack = () => {
     setIsLightboxOpen(false);
     // Восстанавливаем скролл и позицию
     document.body.style.position = '';
@@ -71,6 +72,23 @@ const EventPage = () => {
 
     // Заменяем текущую запись истории без флага лайтбокса
     window.history.replaceState({}, '', window.location.href);
+    // window.history.back();
+  };
+
+  // Закрытие лайтбокса с восстановлением позиции
+  // всеми остальными способами
+  // (не кнопкой Назад)
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+    // Восстанавливаем скролл и позицию
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    window.scrollTo(savedScrollPosition.current.x, savedScrollPosition.current.y);
+
+    // Переход на 1 шаг назад
+    // window.history.replaceState({}, '', window.location.href);
+    window.history.back();
   };
 
   // Плавный скролл наверх
@@ -98,7 +116,7 @@ const EventPage = () => {
 
       isHandlingPopstate.current = true;
       event.preventDefault();
-      closeLightbox();
+      closeLightboxBack();
 
       setTimeout(() => {
         isHandlingPopstate.current = false;
@@ -110,17 +128,17 @@ const EventPage = () => {
   }, [isLightboxOpen]);
 
   // Обработка Escape
-  useEffect(() => {
-    if (isLightboxOpen) {
-      const handleKeyDown = (event) => {
-        if (event.key === 'Escape') {
-          closeLightbox();
-        }
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isLightboxOpen]);
+  // useEffect(() => {
+  //   if (isLightboxOpen) {
+  //     const handleKeyDown = (event) => {
+  //       if (event.key === 'Escape') {
+  //         closeLightbox();
+  //       }
+  //     };
+  //     window.addEventListener('keydown', handleKeyDown);
+  //     return () => window.removeEventListener('keydown', handleKeyDown);
+  //   }
+  // }, [isLightboxOpen]);
 
   useEffect(() => {
     return () => {
