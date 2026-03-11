@@ -100,8 +100,8 @@ const Header = () => {
               </li>
               <li className="nav-item">
                 <Link
-                  to="/about"
-                  className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
+                  to="/contacts"
+                  className={`nav-link ${location.pathname === '/contacts' ? 'active' : ''}`}
                   onClick={handleMenuItemClick}
                 >
                   Контакты

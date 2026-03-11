@@ -1,7 +1,7 @@
 import React from 'react';
-import './About.css';
+import './Contacts.css';
 
-const About = () => {
+const Contacts = () => {
   return (
     <div className="about-page">
       <section className="about-section">
@@ -12,4 +12,4 @@ const About = () => {
   );
 };
 
-export default About;
+export default Contacts;

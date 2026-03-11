@@ -21,7 +21,7 @@ import InactiveEventsPage from './Components/Admin/InactiveEventsPage';
 import UpdateCategoryAndDateForm from './Components/Admin/Forms/UpdateCategoryAndDateForm';
 import UpdateCoverForm from './Components/Admin/Forms/UpdateCoverForm';
 
-import About from './Pages/About';
+import Contacts from './Pages/Contacts';
 import EventDetail from './Components/EventDetail';
 import Login from './Pages/Login';
 import Header from './Components/Header';
@@ -35,7 +35,7 @@ const App = () => {
   const categories = [
     { path: 'wedding', title: 'Свадьбы' },
     { path: 'portrait', title: 'Портреты' },
-    { path: 'family', title: 'Семьи' },
+    { path: 'family', title: 'Истории' },
     { path: 'blog', title: 'Блог'},
   ];
 
@@ -71,7 +71,7 @@ const App = () => {
               element={<CategoryPage category={path} title={title} />}
             />
           ))}
-          <Route path="/about" element={<About />} />
+          <Route path="/contacts" element={<Contacts />} />
           <Route path="/events/:category/:date" element={<EventDetail />} />
 
           {/* Страница входа — только если НЕ авторизован */}
