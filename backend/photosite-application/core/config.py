@@ -41,7 +41,7 @@ class Static(BaseModel):
 class Auth(BaseModel):
     access_token_expires_minutes: int = 1
     refresh_token_expire_days: int = 3
-    secret_key: str = "my_secret_key"
+    secret_key: str = ""
     algorithm: str = "HS256"
 
 

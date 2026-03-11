@@ -86,7 +86,7 @@ const Header = () => {
                   className={`nav-link ${location.pathname === '/family' ? 'active' : ''}`}
                   onClick={handleMenuItemClick}
                 >
-                  Семьи
+                  Истории
                 </Link>
               </li>
               <li className="nav-item">

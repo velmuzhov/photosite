@@ -240,7 +240,7 @@ const EventPage = () => {
               ? 'портретам'
               : category === 'blog'
               ? 'блогу'
-              : 'семейным'}
+              : 'историям'}
           </Link>
           <Link to="/" className="btn btn-secondary">
             На главную

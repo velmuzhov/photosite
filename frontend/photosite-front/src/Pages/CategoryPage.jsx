@@ -168,7 +168,7 @@ const CategoryPage = ({ category, title }) => {
 
   const renderEmptyState = () => (
     <div className="empty-state">
-      <p>В данной категории пока нет съемок.</p>
+      <p>Здесь пока ничего нет</p>
     </div>
   );
 
