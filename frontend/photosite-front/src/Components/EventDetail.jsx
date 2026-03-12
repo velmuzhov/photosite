@@ -52,16 +52,46 @@ const EventPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Открытие лайтбокса
-  const openLightbox = (index) => {
-    setCurrentImageIndex(index);
-    setIsLightboxOpen(true);
+  // Функция открытия лайтбокса
+const openLightbox = (index) => {
+  setCurrentImageIndex(index);
+  setIsLightboxOpen(true);
+
+  // Сохраняем историю состояния
+  history.pushState({ lightboxOpened: true }, "");
+};
+
+// Функция закрытия лайтбокса
+const closeLightbox = () => {
+  setIsLightboxOpen(false);
+
+  // Удаление последнего состояния
+  // window.history.replaceState({}, '', window.location.href);
+  history.back();
+};
+
+const closeLightboxBackButton = () => {
+  setIsLightboxOpen(false);
+
+  // Удаление последнего состояния (для кнопки "назад" особое)
+  window.history.replaceState({}, '', window.location.href);
+  // history.back();
+};
+
+  useEffect(() => {
+  const handlePopState = (event) => {
+    if (isLightboxOpen) {
+      event.preventDefault(); // предотвращаем стандартный переход назад
+      closeLightboxBackButton(); // закрываем лайтбокс
+    }
   };
 
-  // Закрытие лайтбокса
-  const closeLightbox = () => {
-    setIsLightboxOpen(false);
+  window.addEventListener("popstate", handlePopState);
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState); // очистка слушателей при удалении компонента
   };
+}, [isLightboxOpen]);
 
   if (loading) {
     return (
