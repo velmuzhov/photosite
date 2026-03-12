@@ -206,7 +206,7 @@ const closeLightboxBackButton = () => {
             }}
             plugins={[Zoom]}
             zoom={{
-              maxZoomPixelRatio: 3, // макс. увеличение: в 3 раза
+              maxZoomPixelRatio: 1, // макс. увеличение: пиксель-в-пиксель
               zoomInIcon: '➕', // иконка увеличения
               zoomOutIcon: '➖', // иконка уменьшения
               zoomOutLabel: 'Уменьшить',
