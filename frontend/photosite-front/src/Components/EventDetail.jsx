@@ -61,6 +61,7 @@ const EventPage = () => {
   // Закрытие лайтбокса
   const closeLightbox = () => {
     setIsLightboxOpen(false);
+    
   };
 
   if (loading) {
