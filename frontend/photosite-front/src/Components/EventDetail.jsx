@@ -56,13 +56,11 @@ const EventPage = () => {
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
     setIsLightboxOpen(true);
-
   };
 
   // Закрытие лайтбокса
   const closeLightbox = () => {
     setIsLightboxOpen(false);
-
   };
 
   if (loading) {
@@ -170,7 +168,12 @@ const EventPage = () => {
               // caption: img.caption || '',
             }))}
             index={currentImageIndex}
-            controller={{ closeOnBackdropClick: true, swipeToClose: true }}
+            controller={{
+              closeOnPullDown: true,
+              closeOnPullUp: true,
+              closeOnBackdropClick: true,
+              swipeToClose: true,
+            }}
             plugins={[Zoom]}
             zoom={{
               maxZoomPixelRatio: 3, // макс. увеличение: в 3 раза
