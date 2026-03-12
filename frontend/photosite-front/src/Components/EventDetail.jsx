@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import './EventDetail.css';
-import Lightbox from './Lightbox';
+import Lightbox from 'yet-another-react-lightbox';
+import { Zoom } from 'yet-another-react-lightbox/plugins';
+
+import 'yet-another-react-lightbox/styles.css';
 import { getEventDetail } from '../services/api';
 
 const EventPage = () => {
@@ -9,13 +12,9 @@ const EventPage = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [currentImageSrc, setCurrentImageSrc] = useState('');
-  const containerRef = useRef(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [loadedImages, setLoadedImages] = useState(new Set());
-  const imageRefs = useRef({});
-  const savedScrollPosition = useRef({ x: 0, y: 0 }); // Сохраняем позицию прокрутки
-  const isHandlingPopstate = useRef(false); // Флаг для защиты от рекурсии
 
   // Загрузка данных события
   useEffect(() => {
@@ -34,68 +33,14 @@ const EventPage = () => {
 
   // Обработчик загрузки изображения
   const handleImageLoad = (imageId) => {
-    setLoadedImages(prev => new Set(prev).add(imageId));
-  };
-
-  // Открытие лайтбокса с сохранением позиции прокрутки
-  const openLightbox = (imgPath) => {
-    // Сохраняем текущую позицию прокрутки перед блокировкой
-    savedScrollPosition.current = {
-      x: window.pageXOffset,
-      y: window.pageYOffset
-    };
-
-    setCurrentImageSrc(
-      `${import.meta.env.VITE_BASE_FULLSIZE_PICTURES_URL}/${imgPath}`
-    );
-    setIsLightboxOpen(true);
-
-    // Блокируем скролл
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${savedScrollPosition.current.y}px`;
-    document.body.style.left = `-${savedScrollPosition.current.x}px`;
-    document.body.style.width = '100%';
-
-    // Добавляем запись в историю с флагом лайтбокса
-    window.history.pushState({ isLightbox: true }, '', window.location.href);
-  };
-
-  // Закрытие лайтбокса с восстановлением позиции
-  // с помощью кнопки Назад
-  const closeLightboxBack = () => {
-    setIsLightboxOpen(false);
-    // Восстанавливаем скролл и позицию
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    window.scrollTo(savedScrollPosition.current.x, savedScrollPosition.current.y);
-
-    // Заменяем текущую запись истории без флага лайтбокса
-    window.history.replaceState({}, '', window.location.href);
-    // window.history.back();
-  };
-
-  // Закрытие лайтбокса с восстановлением позиции
-  // всеми остальными способами
-  // (не кнопкой Назад)
-  const closeLightbox = () => {
-    setIsLightboxOpen(false);
-    // Восстанавливаем скролл и позицию
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    window.scrollTo(savedScrollPosition.current.x, savedScrollPosition.current.y);
-
-    // Переход на 1 шаг назад
-    // window.history.replaceState({}, '', window.location.href);
-    window.history.back();
+    setLoadedImages((prev) => new Set(prev).add(imageId));
   };
 
   // Плавный скролл наверх
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   };
 
@@ -107,44 +52,16 @@ const EventPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Перехват кнопки «Назад» при открытом лайтбоксе
-  useEffect(() => {
-    if (!isLightboxOpen) return;
+  // Открытие лайтбокса
+  const openLightbox = (index) => {
+    setCurrentImageIndex(index);
+    setIsLightboxOpen(true);
+  };
 
-    const handlePopState = (event) => {
-      if (isHandlingPopstate.current) return;
-
-      isHandlingPopstate.current = true;
-      event.preventDefault();
-      closeLightboxBack();
-
-      setTimeout(() => {
-        isHandlingPopstate.current = false;
-      }, 100); // Сброс флага через 100 мс
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [isLightboxOpen]);
-
-  // Обработка Escape
-  // useEffect(() => {
-  //   if (isLightboxOpen) {
-  //     const handleKeyDown = (event) => {
-  //       if (event.key === 'Escape') {
-  //         closeLightbox();
-  //       }
-  //     };
-  //     window.addEventListener('keydown', handleKeyDown);
-  //     return () => window.removeEventListener('keydown', handleKeyDown);
-  //   }
-  // }, [isLightboxOpen]);
-
-  useEffect(() => {
-    return () => {
-      imageRefs.current = {};
-    };
-  }, []);
+  // Закрытие лайтбокса
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
 
   if (loading) {
     return (
@@ -173,7 +90,7 @@ const EventPage = () => {
 
   return (
     <div className="app-container">
-      <div className="event-page" ref={containerRef}>
+      <div className="event-page">
         {/* Кнопка «Наверх» */}
         <button
           className={`btn-to-top ${showBackToTop ? 'visible' : ''}`}
@@ -184,9 +101,7 @@ const EventPage = () => {
         </button>
 
         {/* Дата съёмки */}
-        <p className="text-muted fs-small mb-2">
-          {event.date || date}
-        </p>
+        <p className="text-muted fs-small mb-2">{event.date || date}</p>
 
         {/* Описание */}
         <h1 className="mb-4 fs-normal text-muted">{event.description || ''}</h1>
@@ -200,10 +115,9 @@ const EventPage = () => {
               <div
                 key={index}
                 className="gallery-item ratio-5-4"
-                onClick={() => openLightbox(img.path)}
+                onClick={() => openLightbox(index)}
               >
                 <img
-                  ref={(el) => { imageRefs.current[imageId] = el; }}
                   src={`${import.meta.env.VITE_BASE_THUMBNAILS_PICTURES_URL}/${img.path}`}
                   alt={`Фото ${index + 1}`}
                   className={`gallery-image ${loadedImages.has(imageId) ? 'loaded' : ''}`}
@@ -212,15 +126,15 @@ const EventPage = () => {
                   onContextMenu={(e) => e.preventDefault()}
                   onError={(e) => {
                     e.target.style.display = 'none';
-            const parent = e.target.parentElement;
-            parent.style.background = '#e0e0e0';
-            parent.textContent = 'Ошибка загрузки';
-            parent.style.color = '#666';
-            parent.style.display = 'flex';
-            parent.style.justifyContent = 'center';
-            parent.style.alignItems = 'center';
-            parent.style.fontSize = '14px';
-          }}
+                    const parent = e.target.parentElement;
+                    parent.style.background = '#e0e0e0';
+                    parent.textContent = 'Ошибка загрузки';
+                    parent.style.color = '#666';
+                    parent.style.display = 'flex';
+                    parent.style.justifyContent = 'center';
+                    parent.style.alignItems = 'center';
+                    parent.style.fontSize = '14px';
+                  }}
                 />
               </div>
             );
@@ -229,18 +143,15 @@ const EventPage = () => {
 
         {/* Кнопки внизу страницы */}
         <div className="d-flex gap-md justify-center mt-lg">
-          <Link
-            to={`/${category}`}
-            className="btn btn-secondary"
-          >
-                      ← К{' '}
+          <Link to={`/${category}`} className="btn btn-secondary">
+            ← К{' '}
             {category === 'wedding'
               ? 'свадьбам'
               : category === 'portrait'
-              ? 'портретам'
-              : category === 'blog'
-              ? 'блогу'
-              : 'историям'}
+                ? 'портретам'
+                : category === 'blog'
+                  ? 'блогу'
+                  : 'историям'}
           </Link>
           <Link to="/" className="btn btn-secondary">
             На главную
@@ -250,8 +161,22 @@ const EventPage = () => {
         {/* Лайтбокс */}
         {isLightboxOpen && (
           <Lightbox
-            imageSrc={currentImageSrc}
-            onClose={closeLightbox}
+            open={isLightboxOpen}
+            close={closeLightbox}
+            slides={event.pictures.map((img) => ({
+              src: `${import.meta.env.VITE_BASE_FULLSIZE_PICTURES_URL}/${img.path}`,
+              caption: img.caption || '',
+            }))}
+            index={currentImageIndex}
+            controller={{ closeOnBackdropClick: true, swipeToClose: true }}
+            plugins={[Zoom]}
+            zoom={{
+              maxZoomPixelRatio: 3, // макс. увеличение: в 3 раза
+              zoomInIcon: '➕', // иконка увеличения
+              zoomOutIcon: '➖', // иконка уменьшения
+              zoomOutLabel: 'Уменьшить',
+              zoomInLabel: 'Увеличить',
+            }}
           />
         )}
       </div>
