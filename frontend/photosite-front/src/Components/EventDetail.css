@@ -205,17 +205,19 @@
   font-weight: 400;
 }
 
-/* styles.css */
+/* Скрываются кнопки в лайтбоксе на маленьких экранах */
 @media (hover: none) and (pointer: coarse) {
   .yarl__navigation_prev,
-  .yarl__navigation_next {
+  .yarl__navigation_next,
+  .yarl__button {
     display: none !important;
   }
 }
 
 @media (max-width: 768px) {
   .yarl__navigation_prev,
-  .yarl__navigation_next {
+  .yarl__navigation_next,
+  .yarl__button {
     display: none !important;
   }
 }
