@@ -56,12 +56,13 @@ const EventPage = () => {
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
     setIsLightboxOpen(true);
+
   };
 
   // Закрытие лайтбокса
   const closeLightbox = () => {
     setIsLightboxOpen(false);
-    
+
   };
 
   if (loading) {
@@ -166,7 +167,7 @@ const EventPage = () => {
             close={closeLightbox}
             slides={event.pictures.map((img) => ({
               src: `${import.meta.env.VITE_BASE_FULLSIZE_PICTURES_URL}/${img.path}`,
-              caption: img.caption || '',
+              // caption: img.caption || '',
             }))}
             index={currentImageIndex}
             controller={{ closeOnBackdropClick: true, swipeToClose: true }}
