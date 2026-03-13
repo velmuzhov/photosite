@@ -1,58 +1,89 @@
-.about-page {
+.contacts-page {
   padding: var(--spacing-lg) var(--spacing-md);
   max-width: 1200px;
   margin: 0 auto;
+  font-family: var(--font-family-base);
 }
 
-.about-page h1 {
+.contacts-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.contacts-section h1 {
   font-size: var(--font-size-xl);
   margin-bottom: var(--spacing-lg);
   color: var(--color-text-dark);
   font-weight: var(--fw-bold);
 }
 
-.about-page p {
+.contacts-section p {
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
   color: var(--color-text-muted);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
 }
 
-/* Дополнительные параграфы */
-.about-page p + p {
-  margin-top: var(--spacing-sm);
+/* Список контактов */
+.contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Элемент контакта — полностью отключаем все эффекты */
+.contact-item {
+  display: flex;
+  align-items: center;
+  text-decoration: none !important;
+  color: var(--color-text) !important;
+  width: fit-content;
+  cursor: default !important; /* Убираем курсор-руку */
+}
+
+/* Отключаем стили для всех состояний ссылки */
+.contact-item:hover,
+.contact-item:active,
+.contact-item:focus,
+.contact-item:visited {
+  text-decoration: none !important;
+  color: var(--color-text) !important;
+  outline: none !important;
+}
+
+/* Иконка контакта */
+.contact-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+/* Текст контакта */
+.contact-text {
+  font-size: var(--font-size-md);
+  color: inherit;
 }
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
-  .about-page {
+  .contacts-page {
     padding: var(--spacing-md) var(--spacing-sm);
   }
   
-  .about-page h1 {
+  .contacts-section h1 {
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-md);
+  }
+  
+  .contact-text {
+    font-size: var(--font-size-sm);
   }
 }
 
 /* Планшетная версия */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .about-page {
+  .contacts-page {
     padding: var(--spacing-lg) var(--spacing-md);
     max-width: 90%;
   }
-}
-
-/* Улучшенная типографика */
-.about-page {
-  font-family: var(--font-family-base);
-}
-
-/* Отступы для структурирования контента */
-.about-section {
-  margin-bottom: var(--spacing-xl);
-}
-
-.about-section:last-child {
-  margin-bottom: 0;
 }
