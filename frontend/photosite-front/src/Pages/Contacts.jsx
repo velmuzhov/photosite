@@ -11,7 +11,7 @@ const Contacts = () => {
         <div className="contacts-list">
           {/* Телефон */}
           <a
-            href="tel:+79056696161"
+            href="tel:+79056696361"
             className="contact-item"
           >
             <img
