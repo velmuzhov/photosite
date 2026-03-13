@@ -30,7 +30,6 @@ const Login = () => {
       // Сохранение токена (в реальном приложении — после успешного ответа сервера)
       localStorage.setItem('access_token', 'mock-token');
 
-      console.log('[Login] Авторизация успешна, переходим в админку');
       setStatus({ type: 'success', message: 'Успешный вход! Перенаправление...' });
 
       setTimeout(() => {

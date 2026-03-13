@@ -15,6 +15,7 @@ const EventPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [loadedImages, setLoadedImages] = useState(new Set());
+  const isAuthenticated = !!localStorage.getItem('access_token');
 
   // Загрузка данных события
   useEffect(() => {
@@ -53,45 +54,45 @@ const EventPage = () => {
   }, []);
 
   // Функция открытия лайтбокса
-const openLightbox = (index) => {
-  setCurrentImageIndex(index);
-  setIsLightboxOpen(true);
+  const openLightbox = (index) => {
+    setCurrentImageIndex(index);
+    setIsLightboxOpen(true);
 
-  // Сохраняем историю состояния
-  history.pushState({ lightboxOpened: true }, "");
-};
+    // Сохраняем историю состояния
+    history.pushState({ lightboxOpened: true }, '');
+  };
 
-// Функция закрытия лайтбокса
-const closeLightbox = () => {
-  setIsLightboxOpen(false);
+  // Функция закрытия лайтбокса
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
 
-  // Удаление последнего состояния
-  // window.history.replaceState({}, '', window.location.href);
-  history.back();
-};
+    // Удаление последнего состояния
+    // window.history.replaceState({}, '', window.location.href);
+    history.back();
+  };
 
-const closeLightboxBackButton = () => {
-  setIsLightboxOpen(false);
+  const closeLightboxBackButton = () => {
+    setIsLightboxOpen(false);
 
-  // Удаление последнего состояния (для кнопки "назад" особое)
-  window.history.replaceState({}, '', window.location.href);
-  // history.back();
-};
+    // Удаление последнего состояния (для кнопки "назад" особое)
+    window.history.replaceState({}, '', window.location.href);
+    // history.back();
+  };
 
   useEffect(() => {
-  const handlePopState = (event) => {
-    if (isLightboxOpen) {
-      event.preventDefault(); // предотвращаем стандартный переход назад
-      closeLightboxBackButton(); // закрываем лайтбокс
-    }
-  };
+    const handlePopState = (event) => {
+      if (isLightboxOpen) {
+        event.preventDefault(); // предотвращаем стандартный переход назад
+        closeLightboxBackButton(); // закрываем лайтбокс
+      }
+    };
 
-  window.addEventListener("popstate", handlePopState);
+    window.addEventListener('popstate', handlePopState);
 
-  return () => {
-    window.removeEventListener("popstate", handlePopState); // очистка слушателей при удалении компонента
-  };
-}, [isLightboxOpen]);
+    return () => {
+      window.removeEventListener('popstate', handlePopState); // очистка слушателей при удалении компонента
+    };
+  }, [isLightboxOpen]);
 
   if (loading) {
     return (
@@ -131,7 +132,9 @@ const closeLightboxBackButton = () => {
         </button>
 
         {/* Дата съёмки */}
-        <p className="text-muted fs-small mb-2">{event.date || date}</p>
+        {(isAuthenticated || category === 'blog') && (
+          <p className="text-muted fs-small mb-2">{event.date || date}</p>
+        )}
 
         {/* Описание */}
         <h1 className="mb-4 fs-normal text-muted">{event.description || ''}</h1>

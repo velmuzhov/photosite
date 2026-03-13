@@ -6,6 +6,8 @@ import './EventCard.css';
 const EventCard = ({ event, category }) => {
   // Форматируем дату в русскоязычном формате
   const date = new Date(event.date).toLocaleDateString('ru-RU');
+  const isAuthenticated = !!localStorage.getItem('access_token');
+  
 
   return (
     <Link to={`/events/${category}/${event.date}`} className="event-card d-block">
@@ -20,7 +22,7 @@ const EventCard = ({ event, category }) => {
       </div>
 
       <div className="event-card__info">
-        <h3 className="event-card__date">{date}</h3>
+        {(isAuthenticated || category === "blog") && <h3 className="event-card__date">{date}</h3>}
         {event.description && (
           <p className="event-card__description">
             {event.description.length < 50
