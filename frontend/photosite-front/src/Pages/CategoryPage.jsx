@@ -90,7 +90,7 @@ const CategoryPage = ({ category, title }) => {
         </PaginationButton>,
       );
 
-      if (currentPage > leftEdge + 1) {
+      if (currentPage > leftEdge) {
         pages.push(
           <span key="ellipsis-left" className="ellipsis">
             ...
@@ -102,7 +102,7 @@ const CategoryPage = ({ category, title }) => {
             onClick={() => handlePageChange(currentPage - 1)}
             variant="outline"
           >
-            {currentPage - 1}
+            {"<"}
           </PaginationButton>,
         );
       }
@@ -120,14 +120,14 @@ const CategoryPage = ({ category, title }) => {
         );
       }
 
-      if (currentPage < rightEdge - 1) {
+      if (currentPage < rightEdge) {
         pages.push(
           <PaginationButton
             key={currentPage + 1}
             onClick={() => handlePageChange(currentPage + 1)}
             variant="outline"
           >
-            {currentPage + 1}
+            {">"}
           </PaginationButton>,
         );
         pages.push(

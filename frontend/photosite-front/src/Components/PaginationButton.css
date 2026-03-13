@@ -11,26 +11,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: rgba(0, 0, 0, 0.7); /* Чуть менее непрозрачные надписи */
 }
 
 .pagination-btn-default {
-  background-color: var(--color-primary);
-  color: var(--color-white);
+  background-color: #fff; /* Белый фон */
+  color: rgba(0, 0, 0, 0.7); /* Серый текст */
 }
 
 .pagination-btn-default:hover:not(.pagination-btn-disabled) {
-  background-color: var(--color-primary-dark);
+  background-color: #f5f5f5; /* Светло‑серый при наведении */
   transform: translateY(-1px);
 }
 
 .pagination-btn-outline {
   background-color: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  color: rgba(0, 0, 0, 0.7);
+  border: none; /* Убираем обводку со всех кнопок по умолчанию */
 }
 
 .pagination-btn-outline:hover:not(.pagination-btn-disabled) {
-  background-color: var(--color-primary-light);
+  background-color: #f5f5f5;
   transform: translateY(-1px);
 }
 
@@ -40,19 +41,19 @@
   pointer-events: none;
 }
 
-/* Активная страница */
+/* Активная страница — только у неё есть обводка */
 .pagination-btn.active {
-  background-color: var(--color-primary-dark) !important;
-  color: var(--color-white) !important;
-  border-color: var(--color-primary-darker) !important;
+  background-color: #000; /* Чёрный фон */
+  color: #fff !important; /* Белый текст */
+  border: 2px solid #000 !important; /* Чёрная обводка только у активной */
   pointer-events: none;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Фокус для доступности */
 .pagination-btn:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3); /* Тёмно‑серая тень фокуса */
   z-index: 1;
 }
 
