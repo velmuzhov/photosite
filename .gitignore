@@ -247,3 +247,6 @@ dist-ssr
 
 local.nginx.conf
 bad.nginx.conf
+
+*.jpg
+*.jpeg

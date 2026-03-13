@@ -32,6 +32,63 @@
   border-radius: 2px;
 }
 
+/* Блок с изображениями — занимает всю ширину */
+.images-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* По умолчанию — одна колонка */
+  gap: var(--spacing-sm);
+  width: 100%;
+  margin: var(--spacing-xl) 0;
+}
+
+/* На горизонтальных экранах — две колонки */
+@media (orientation: landscape) and (min-width: 768px) {
+  .images-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Контейнер для изображения */
+.image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3; /* Соотношение сторон 2:3 для резервирования места */
+}
+
+/* Стили для изображений */
+.responsive-image {
+  width: 100%;
+  height: auto; /* Высота подстраивается автоматически, сохраняя пропорции */
+  display: block;
+  max-height: 100%; /* Ограничиваем максимальную высоту контейнером */
+}
+
+/* Скрываем второе изображение на вертикальных экранах */
+.hide-on-vertical {
+  display: none;
+}
+
+@media (orientation: landscape) and (min-width: 768px) {
+  .hide-on-vertical {
+    display: block;
+  }
+}
+
+/* Ссылка на VK — по центру */
+.vk-link {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: var(--spacing-xl) auto;
+}
+
+/* Иконка VK */
+.vk-icon {
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
   .home-page {
@@ -46,6 +103,10 @@
   .home-page p {
     font-size: var(--font-size-base);
     max-width: 90%;
+  }
+  
+  .images-grid {
+    margin: var(--spacing-lg) 0;
   }
 }
 

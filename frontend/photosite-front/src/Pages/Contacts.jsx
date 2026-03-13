@@ -6,7 +6,7 @@ const Contacts = () => {
     <div className="about-page">
       <section className="about-section">
         <h1>Контакты</h1>
-        <p>Здесь будут мои контакты</p>
+        <p>Свяжитесь со мной удобным способом:</p>
       </section>
     </div>
   );
