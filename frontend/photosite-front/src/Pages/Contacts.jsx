@@ -19,7 +19,7 @@ const Contacts = () => {
               alt="Телефон"
               className="contact-icon"
             />
-            <span className="contact-text">+7-905-669-61-61</span>
+            <span className="contact-text">+7-905-669-63-61</span>
           </a>
 
           {/* ВКонтакте */}
